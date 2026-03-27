@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>数字图书馆 - 管理员后台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1rem 0.5rem;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .library-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0b3b5c;
+        }
+
+        .time-info {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .refresh-btn {
+            font-size: 1rem;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .profile-icon {
+            font-size: 1.2rem;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .sidebar {
+            width: 200px;
+            height: calc(100vh - 60px);
+            background: white;
+            border-right: 1px solid #eee;
+            position: fixed;
+            top: 60px;
+            left: 0;
+            padding: 1rem 0;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-item {
+            padding: 0.8rem 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item:hover {
+            background: #f0f0f0;
+        }
+
+        .menu-item.active {
+            background: #e0f2ff;
+            border-left: 3px solid #0b3b5c;
+        }
+
+        .main-content {
+            margin-left: 200px;
+            padding: 1rem;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            padding: 0.8rem 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+        }
+
+        .stat-title {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .search-filter {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            background: #0b3b5c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #124f7a;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f0f0f0;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        .status-pending {
+            background: #ff6b6b;
+        }
+
+        .status-handled {
+            background: #4caf50;
+        }
+
+        .action-btn {
+            padding: 0.3rem 0.8rem;
+            background: #0b3b5c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .close-btn {
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        select,
+        input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                top: auto;
+                left: auto;
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 顶部导航栏 -->
+    <div class="header">
+        <div class="library-name">数字图书馆</div>
+        <div class="time-info">2026年3月9日 14:30 星期一</div>
+        <div class="header-right">
+            <i class="fas fa-sync-alt refresh-btn"></i>
+            <i class="fas fa-user profile-icon"></i>
+        </div>
+    </div>
+
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="menu-item active" onclick="window.location.href='index.html'">违规管理</div>
+        <div class="menu-item">座位监控</div>
+        <div class="menu-item">用户管理</div>
+        <div class="menu-item">系统设置</div>
+        <div class="menu-item" onclick="window.location.href='admin-profile.html'">个人中心</div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+        <!-- 统计栏 -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-title">待处理违约</div>
+                <div class="stat-value">12</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">今日新增违约</div>
+                <div class="stat-value">5</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">本月累计违约</div>
+                <div class="stat-value">48</div>
+            </div>
+        </div>
+
+        <!-- 搜索与筛选 -->
+        <div class="search-filter">
+            <input type="text" class="search-input" placeholder="搜索：学号、姓名...">
+            <select class="search-input">
+                <option>搜索违约记录</option>
+                <option>按学号范选</option>
+                <option>按日期简选</option>
+            </select>
+            <select class="search-input">
+                <option>违约类型</option>
+                <option>长时间占座</option>
+                <option>超时未归还</option>
+            </select>
+            <select class="search-input">
+                <option>处理状态</option>
+                <option>待处理</option>
+                <option>已处理</option>
+            </select>
+            <button class="btn">查询</button>
+        </div>
+
+        <!-- 表格 -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>学号</th>
+                        <th>姓名</th>
+                        <th>违约类型</th>
+                        <th>违约时间</th>
+                        <th>座位号</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>100</td>
+                        <td>王伟</td>
+                        <td>长时间占座</td>
+                        <td>2026-03-20</td>
+                        <td>5</td>
+                        <td><span class="status-dot status-pending"></span>待处理</td>
+                        <td><button class="action-btn" onclick="openModal('100')">处理</button></td>
+                    </tr>
+                    <tr>
+                        <td>3210</td>
+                        <td>王伟</td>
+                        <td>长时间占座</td>
+                        <td>2026-03-20</td>
+                        <td>4</td>
+                        <td><span class="status-dot status-pending"></span>待处理</td>
+                        <td><button class="action-btn" onclick="openModal('3210')">处理</button></td>
+                    </tr>
+                    <tr>
+                        <td>151</td>
+                        <td>王伟</td>
+                        <td>长时间占座</td>
+                        <td>2026-03-18</td>
+                        <td>6</td>
+                        <td><span class="status-dot status-pending"></span>待处理</td>
+                        <td><button class="action-btn" onclick="openModal('151')">处理</button></td>
+                    </tr>
+                    <tr>
+                        <td>351G</td>
+                        <td>李丽</td>
+                        <td>超时未归还</td>
+                        <td>2026-02-20</td>
+                        <td>4</td>
+                        <td><span class="status-dot status-handled"></span>已处理</td>
+                        <td><button class="action-btn" style="background: #999; cursor: not-allowed;" onclick="return false;">已处理</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 弹窗：违规处理详情 -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">违约处理详情</h3>
+                <i class="fas fa-times close-btn" onclick="closeModal()"></i>
+            </div>
+            <div class="form-group">
+                <label>学号</label>
+                <input type="text" id="modal-student-id" readonly>
+            </div>
+            <div class="form-group">
+                <label>姓名</label>
+                <input type="text" id="modal-name" readonly>
+            </div>
+            <div class="form-group">
+                <label>违约类型</label>
+                <input type="text" id="modal-type" readonly>
+            </div>
+            <div class="form-group">
+                <label>违约时间</label>
+                <input type="text" id="modal-time" readonly>
+            </div>
+            <div class="form-group">
+                <label>处理方式</label>
+                <select id="handlingMethod">
+                    <option>待选择</option>
+                    <option>警告</option>
+                    <option>暂停使用1天</option>
+                    <option>冻结账号</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>备注</label>
+                <textarea rows="3" placeholder="请输入处理备注信息..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal()">取消</button>
+                <button class="btn" onclick="submitHandling()">确认提交</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 实时更新顶部时间
+        function updateTime() {
+            const timeElement = document.querySelector('.time-info');
+            const now = new Date();
+
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0'); // 补齐两位数
+            const date = String(now.getDate()).padStart(2, '0');
+
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+
+            const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const day = days[now.getDay()];
+
+            // 拼接成你需要的格式
+            timeElement.textContent = `${year}年${month}月${date}日 ${hours}:${minutes} ${day}`;
+        }
+
+        // 页面加载时立即执行一次，然后每秒（1000毫秒）更新一次
+        updateTime();
+        setInterval(updateTime, 1000);
+        // 刷新按钮
+        document.querySelector('.refresh-btn').addEventListener('click', () => {
+            alert('刷新成功！');
+        });
+        // 跳转到管理员个人中心
+        document.querySelector('.profile-icon').addEventListener('click', () => {
+            window.location.href = 'admin-profile.html';
+        });
+
+        // 打开弹窗并动态加载数据
+        function openModal(studentId) {
+            // 1. 获取表格中所有的数据行 (tbody 里的 tr)
+            const rows = document.querySelectorAll('tbody tr');
+            let rowData = null;
+
+            // 2. 遍历表格，寻找学号匹配的那一行
+            for (let row of rows) {
+                // row.cells[0] 代表第一列（学号列）
+                if (row.cells[0].innerText.trim() === String(studentId)) {
+                    // 如果学号匹配，就把这行的其他列数据保存下来
+                    rowData = {
+                        name: row.cells[1].innerText.trim(), // 第二列：姓名
+                        type: row.cells[2].innerText.trim(), // 第三列：违约类型
+                        time: row.cells[3].innerText.trim()  // 第四列：违约时间
+                    };
+                    break; // 找到了就停止循环
+                }
+            }
+
+            // 3. 如果成功找到了数据，就把数据塞进刚才设置好 id 的弹窗输入框里
+            if (rowData) {
+                document.getElementById('modal-title').innerText = `违约处理详情（${rowData.name}）`;
+                document.getElementById('modal-student-id').value = studentId;
+                document.getElementById('modal-name').value = rowData.name;
+                document.getElementById('modal-type').value = rowData.type;
+                document.getElementById('modal-time').value = rowData.time;
+
+                // 每次打开弹窗时，顺便重置一下下拉菜单和文本框，防止残留上次处理的记录
+                document.getElementById('handlingMethod').selectedIndex = 0;
+                document.querySelector('#modal textarea').value = '';
+            }
+
+            // 4. 显示弹窗
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        // 提交处理并更新表格状态
+        function submitHandling() {
+            // 1. 获取选中的处理方式和当前处理的学号
+            const method = document.getElementById('handlingMethod').value;
+            const studentId = document.getElementById('modal-student-id').value;
+
+            // 简单校验：如果管理员忘了选处理方式，给个提示并阻止提交
+            if (method === '待选择') {
+                alert('请先选择处理方式！');
+                return;
+            }
+
+            // 2. 遍历表格，找到刚刚处理的那个学生所在的行
+            const rows = document.querySelectorAll('tbody tr');
+            for (let row of rows) {
+                if (row.cells[0].innerText.trim() === studentId) {
+                    // 找到对应的行后，修改第6列（状态列，索引为5）的 HTML 代码
+                    // 把代表红点的 status-pending 换成代表绿点的 status-handled，并把文字改为"已处理"
+                    row.cells[5].innerHTML = '<span class="status-dot status-handled"></span>已处理';
+
+                    // 把这行的“处理”按钮变成灰色，防止重复处理
+                    const btn = row.cells[6].querySelector('.action-btn');
+                    btn.innerText = '已完成';
+                    btn.style.background = '#999'; // 变成灰色
+                    btn.style.cursor = 'not-allowed'; // 鼠标移上去变成禁止图标
+                    btn.onclick = null; // 移除点击事件，不能再弹窗
+
+                    break; // 修改完毕，跳出循环
+                }
+            }
+
+            // 3. 弹出成功提示并关闭弹窗
+            alert(`学号 ${studentId} 的违规记录已处理完毕，处理方式：${method}`);
+            closeModal();
+        }
+
+
+    </script>
+
+</body>
+
+</html>
