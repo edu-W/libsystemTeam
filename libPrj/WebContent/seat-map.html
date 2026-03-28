@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>数字图书馆 - 座位地图</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: #f5f7fa; color: #333; overflow-x: hidden; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1rem 0.5rem; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; }
+        .legend { position: fixed; right: 20px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 1rem; padding: 1.5rem 1.2rem; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.5); font-size: 0.85rem; color: #444; font-weight: 600; z-index: 90; }
+        .legend-item { display: flex; align-items: center; gap: 0.8rem; font-size: 0.95rem; }
+        .legend-color { width: 22px; height: 22px; border-radius: 50%; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+        @media (max-width: 768px) { .legend { right: 10px; padding: 1rem; gap: 0.8rem; font-size: 0.75rem; } .legend-color { width: 14px; height: 14px; } }
+        .library-name { font-size: 1.1rem; font-weight: 600; color: #0b3b5c; }
+        .time-info { font-size: 0.8rem; color: #666; margin-top: 4px; }
+        .header-right { display: flex; gap: 1rem; align-items: center; }
+        .refresh-btn, .profile-icon { font-size: 1.2rem; color: #666; cursor: pointer; }
+        .floor-tabs { display: flex; overflow-x: auto; white-space: nowrap; padding: 0.5rem 1rem; gap: 0.5rem; background: white; border-bottom: 1px solid #eee; }
+        .floor-tab { padding: 0.6rem 1.2rem; border-radius: 20px; background: #e0e0e0; font-size: 1.05rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .floor-tab.active { background: #0b3b5c; color: white; border-bottom: 2px solid #66ccff; }
+        .area-filter { display: flex; overflow-x: auto; white-space: nowrap; padding: 0.5rem 1rem; gap: 0.5rem; background: white; border-bottom: 1px solid #eee; }
+        .area-tag { padding: 0.3rem 0.8rem; border-radius: 16px; background: #f0f5fb; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+        .area-tag.selected { background: #0b3b5c; color: white; }
+        .map-container { width: 100%; height: calc(100vh - 180px); background: white; border-radius: 16px; padding: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; overflow: auto; }
+        .svg-map { min-width: max-content; min-height: max-content; background: #f4f7f6; border-radius: 8px; }
+        .seat { cursor: pointer; transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); transform-origin: center; transform-box: fill-box; }
+        .seat:hover { transform: scale(1.15); filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.3)); }
+        
+        /* 前端的 CSS 颜色映射表 */
+        .seat.free { fill: #a8d8a8; }
+        .seat.booked { fill: #66ccff; }
+        .seat.used { fill: #ff6b6b; }
+        .seat.temporary { fill: #ffc107; }
+        .seat.closed { fill: #ccc; }
+
+        .popup { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 8px 20px rgba(0,0,0,0.2); z-index: 100; max-width: 200px; text-align: center; border: 1px solid #ddd; }
+        .popup-title { font-weight: 600; margin-bottom: 0.5rem; }
+        .popup-content { font-size: 0.8rem; line-height: 1.4; color: #555; }
+        .report-btn { margin-top: 0.8rem; font-size: 0.8rem; color: #ff6b6b; cursor: pointer; text-decoration: underline; }
+        .quick-book-btn { position: fixed; right: 20px; bottom: 20px; width: 180px; padding: 0.8rem; background: #0b3b5c; color: white; border: none; border-radius: 20px; font-size: 1rem; font-weight: 600; box-shadow: 0 8px 20px rgba(11, 59, 92, 0.2); cursor: pointer; z-index: 100; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .quick-book-btn:hover { background: #124f7a; }
+        @media (max-width: 400px) { .header { padding: 0.8rem; } .floor-tabs, .area-filter { padding: 0.3rem; } .quick-book-btn { width: 150px; font-size: 0.9rem; } }
+
+        /* ================= 快速预约弹窗样式 (必须放在 style 标签里) ================= */
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.5); 
+            display: flex; align-items: center; justify-content: center; 
+            z-index: 1000; backdrop-filter: blur(4px); 
+        }
+        .modal-content { 
+            background: white; padding: 2rem; border-radius: 12px; 
+            width: 90%; max-width: 320px; text-align: center; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+        }
+        .modal-content h3 { color: #0b3b5c; margin-bottom: 1rem; }
+        .suggested-seat { 
+            font-size: 2rem; font-weight: 700; color: #1890ff; 
+            margin: 1.5rem 0; padding: 1rem; background: #f0f5fb; 
+            border-radius: 8px; border: 2px dashed #1890ff; 
+        }
+        .modal-actions { display: flex; justify-content: space-between; gap: 0.5rem; }
+        .modal-actions button { 
+            flex: 1; padding: 0.6rem 0; font-size: 0.9rem; 
+            border: none; border-radius: 4px; cursor: pointer; transition: 0.2s;
+        }
+        .btn-cancel { background: #f0f0f0; color: #666; }
+        .btn-cancel:hover { background: #e0e0e0; }
+        .btn-change { background: #e0f2ff; color: #0b3b5c; }
+        .btn-change:hover { background: #cce4ff; }
+        .btn-confirm { background: #0b3b5c; color: white; }
+        .btn-confirm:hover { background: #124f7a; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="library-name">数字图书馆</div>
+        <div class="time-info">加载中...</div>
+        <div class="header-right">
+            <i class="fas fa-sync-alt refresh-btn" onclick="renderDynamicMap()"></i>
+            <i class="fas fa-user profile-icon" onclick="window.location.href='student_profile.html'"></i>
+        </div>
+    </div>
+
+    <div class="floor-tabs">
+        <div class="floor-tab active">1F</div>
+        <div class="floor-tab">2F</div>
+        <div class="floor-tab">3F</div>
+        <div class="floor-tab">4F</div>
+    </div>
+
+    <div class="area-filter">
+        <div class="area-tag selected">A区 自习区</div>
+        <div class="area-tag">B区 阅览区</div>
+        <div class="area-tag">C区 研讨区</div>
+    </div>
+
+    <div class="map-container">
+        <div class="svg-map">
+            <svg id="library-map" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+                </svg>
+        </div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item"><span class="legend-color" style="background: #a8d8a8;"></span>空闲</div>
+        <div class="legend-item"><span class="legend-color" style="background: #66ccff;"></span>已预约</div>
+        <div class="legend-item"><span class="legend-color" style="background: #ff6b6b;"></span>使用中</div>
+        <div class="legend-item"><span class="legend-color" style="background: #ffc107;"></span>暂离</div>
+        <div class="legend-item"><span class="legend-color" style="background: #ccc;"></span>故障/关闭</div>
+    </div>
+
+    <button class="quick-book-btn">
+        <i class="fas fa-calendar-check"></i> 快速预约
+    </button>
+
+    <div id="popup" class="popup" style="display: none;">
+        <div class="popup-title">座位</div>
+        <div class="popup-content"></div>
+    </div>
+
+    <div id="quick-book-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3><i class="fas fa-magic"></i> 为您推荐</h3>
+            <p style="font-size: 0.9rem; color: #666;">系统在当前区域为您找到空闲座位：</p>
+            <div class="suggested-seat" id="suggested-seat-id">--</div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeQuickBook()">取消</button>
+                <button class="btn-change" onclick="findAnotherSeat()">换一个</button>
+                <button class="btn-confirm" onclick="confirmQuickBook()">确认预约</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // 1. 实时更新时间
+    function updateTime() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('zh-CN', { hour12: false });
+        const dateStr = now.toLocaleDateString('zh-CN');
+        document.querySelector('.time-info').textContent = `${dateStr} ${timeStr}`;
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    // 2. 地图配置数据中心
+    const mapConfigs = {
+        'A区': { columns: 8, rows: 4, gapX: 280, gapY: 260 },
+        'B区': { columns: 5, rows: 3, gapX: 320, gapY: 300 },
+        'C区': { columns: 3, rows: 2, gapX: 400, gapY: 350 }
+    };
+
+    const svgMap = document.getElementById('library-map');
+
+    function getCurrentSelection() {
+        const floorFull = document.querySelector('.floor-tab.active').textContent; 
+        const floor = floorFull.replace('F', ''); // 取出数字 '1'
+        const areaFullText = document.querySelector('.area-tag.selected').textContent; 
+        const area = areaFullText.substring(0, 1); // 取出字母 'A'
+        const areaKey = areaFullText.substring(0, 2); // 'A区' 用于匹配配置
+        return { floor, area, areaKey };
+    }
+
+    // 3. 动态地图渲染引擎 (请求真实后端数据)
+    async function renderDynamicMap() {
+        const selection = getCurrentSelection();
+        const config = mapConfigs[selection.areaKey] || mapConfigs['A区']; 
+        
+        let realSeatData = {}; 
+        try {
+            // 向后端请求真实座位数据
+            const response = await fetch("http://localhost:8080/libPrj/api/seats?floor=" + selection.floor + "&area=" + selection.area);
+            const result = await response.json();
+            
+            if (result.code === 200) {
+                result.data.forEach(seat => {
+                    realSeatData[seat.seatId] = seat;
+                });
+            }
+        } catch (error) {
+            console.error("获取真实座位数据失败:", error);
+        }
+
+        // 清空画布并设置尺寸
+        svgMap.innerHTML = '';
+        const startX = 150, startY = 100;
+        const mapTotalWidth = startX + config.columns * config.gapX + 100;
+        const mapTotalHeight = startY + config.rows * config.gapY + 100;
+        svgMap.setAttribute('viewBox', `0 0 ${mapTotalWidth} ${mapTotalHeight}`);
+        svgMap.style.width = mapTotalWidth + 'px';
+        svgMap.style.height = mapTotalHeight + 'px';
+
+        const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        bgRect.setAttribute('width', mapTotalWidth);
+        bgRect.setAttribute('height', mapTotalHeight);
+        bgRect.setAttribute('fill', '#f4f7f6');
+        svgMap.appendChild(bgRect);
+
+        const tableWidth = 80, tableHeight = 180, seatSize = 30, seatGap = 15;
+        let globalSeatIndex = 1;
+
+        for (let r = 0; r < config.rows; r++) {
+            for (let c = 0; c < config.columns; c++) {
+                const tableX = startX + c * config.gapX;
+                const tableY = startY + r * config.gapY;
+
+                const tableRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                tableRect.setAttribute('x', tableX - tableWidth/2);
+                tableRect.setAttribute('y', tableY);
+                tableRect.setAttribute('width', tableWidth);
+                tableRect.setAttribute('height', tableHeight);
+                tableRect.setAttribute('fill', '#e2e8f0');
+                tableRect.setAttribute('rx', 8);
+                svgMap.appendChild(tableRect);
+
+                for (let i = 0; i < 6; i++) {
+                    const isLeft = i < 3;
+                    const rowIndex = i % 3;
+                    const seatX = isLeft ? (tableX - tableWidth/2 - seatSize - seatGap) : (tableX + tableWidth/2 + seatGap);
+                    const seatY = tableY + (tableHeight / 4) * (rowIndex + 1) - seatSize/2;
+
+                    // 组装 DB 里的标准 ID格式，比如: 1F-A-001
+                    const seatId = `${selection.floor}F-${selection.area}-${String(globalSeatIndex).padStart(3, '0')}`;
+                    const dbSeat = realSeatData[seatId];
+                    
+                    let status = 'free'; 
+                    let userAccount = '';
+                    
+                    if (dbSeat) {
+                        if (dbSeat.status === 'available') status = 'free';
+                        else if (dbSeat.status === 'reserved') status = 'booked';
+                        else if (dbSeat.status === 'occupied') status = 'used';
+                        else status = dbSeat.status;
+
+                        userAccount = dbSeat.userAccount || ''; 
+                    }
+
+                    const seatObj = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    seatObj.setAttribute('x', seatX);
+                    seatObj.setAttribute('y', seatY);
+                    seatObj.setAttribute('width', seatSize);
+                    seatObj.setAttribute('height', seatSize);
+                    seatObj.setAttribute('rx', 6);
+                    seatObj.setAttribute('class', `seat ${status}`); 
+                    
+                    seatObj.setAttribute('data-id', seatId);
+                    seatObj.setAttribute('data-status', status);
+                    if(status === 'used' || status === 'booked' || status === 'temporary') seatObj.setAttribute('data-user', userAccount);
+                    
+                    svgMap.appendChild(seatObj);
+
+                    const textObj = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    textObj.setAttribute('x', seatX + seatSize/2);
+                    textObj.setAttribute('y', seatY + seatSize/2 + 4);
+                    textObj.setAttribute('font-size', '11'); 
+                    textObj.setAttribute('font-weight', 'bold'); 
+                    textObj.setAttribute('fill', '#fff');
+                    textObj.setAttribute('text-anchor', 'middle');
+                    textObj.setAttribute('pointer-events', 'none'); 
+                    
+                    textObj.textContent = `${selection.area}-${String(globalSeatIndex).padStart(3, '0')}`;
+                    svgMap.appendChild(textObj);
+                    globalSeatIndex++;
+                }
+            }
+        }
+    }
+
+    // 4. 绑定标签切换事件
+    document.querySelectorAll('.floor-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.floor-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            renderDynamicMap(); 
+        });
+    });
+
+    document.querySelectorAll('.area-tag').forEach(tag => {
+        tag.addEventListener('click', () => {
+            document.querySelectorAll('.area-tag').forEach(t => t.classList.remove('selected'));
+            tag.classList.add('selected');
+            renderDynamicMap(); 
+        });
+    });
+
+    // 页面首次加载渲染
+    window.onload = function() {
+        renderDynamicMap();
+    };
+
+    // 5. 事件委托：处理座位点击 (预约与退座)
+    svgMap.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('seat')) {
+            const seat = e.target;
+            const popup = document.getElementById('popup');
+            const seatId = seat.getAttribute('data-id');
+            const seatStatus = seat.getAttribute('data-status');
+            const seatUser = seat.getAttribute('data-user') || '无';
+            
+            const myAccount = localStorage.getItem('lib_account'); 
+
+            if (seatStatus === 'free') {
+                if (confirm(`确认预约空闲座位 ${seatId} 吗？`)) {
+                    try {
+                        const res = await fetch('http://localhost:8080/libPrj/api/bookSeat', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ seatId: seatId, userAccount: myAccount })
+                        });
+                        const result = await res.json();
+                        if (result.code === 200) {
+                            alert(`座位 ${seatId} 预约成功！`);
+                            window.location.href = 'student_profile.html';
+                        } else {
+                            alert(result.message);
+                        }
+                    } catch (error) {
+                        alert('网络请求失败，请检查服务器！');
+                        console.error(error);
+                    }
+                }
+            } else {
+                // 非空闲状态，弹出详情详情
+                popup.style.display = 'block';
+                popup.querySelector('.popup-title').textContent = `座位 ${seatId}`;
+                
+                let statusText = '', userText = '';
+                switch(seatStatus) {
+                    case 'used': statusText = '使用中'; userText = `占用人：${seatUser}`; break;
+                    case 'booked': statusText = '已预约'; userText = `预约人：${seatUser}`; break;
+                    case 'temporary': statusText = '暂离中'; userText = `占用人：${seatUser}`; break;
+                    case 'closed': statusText = '维护中'; break;
+                }
+
+                let popupHtml = `<p><strong>${statusText}</strong></p>`;
+                if (userText) popupHtml += `<p>${userText}</p>`;
+
+                if (seatUser === myAccount && myAccount != null) {
+                    if (seatStatus === 'booked') {
+                        popupHtml += '<button id="checkInBtn" style="margin-top: 15px; width: 100%; padding: 8px 10px; background: #52c41a; border: none; color: white; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600; margin-bottom: 8px;">签到入座</button>';
+                    } 
+                    else if (seatStatus === 'used') {
+                        popupHtml += '<button id="tempLeaveBtn" style="margin-top: 15px; width: 100%; padding: 8px 10px; background: #faad14; border: none; color: white; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600; margin-bottom: 8px;">临时离开</button>';
+                    }
+                    else if (seatStatus === 'temporary') {
+                        popupHtml += '<button id="resumeBtn" style="margin-top: 15px; width: 100%; padding: 8px 10px; background: #1890ff; border: none; color: white; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600; margin-bottom: 8px;">恢复入座</button>';
+                    }
+
+                    popupHtml += '<button id="cancelSeatBtn" style="width: 100%; padding: 8px 10px; background: #fff; border: 1px solid #ff6b6b; color: #ff6b6b; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600;">释放座位</button>';
+                } 
+                else if (seatUser !== '无' && seatUser !== myAccount && myAccount != null) {
+                    popupHtml += '<div id="reportSeatBtn" class="report-btn" style="margin-top: 15px; cursor:pointer; color:#ff4d4f; text-decoration:underline; font-size: 13px; text-align: center; font-weight: bold;">举报该座位违规占用</div>';
+                }
+
+                popup.querySelector('.popup-content').innerHTML = popupHtml;
+
+                async function sendSeatAction(actionName, successMsg) {
+                    try {
+                        const res = await fetch('http://localhost:8080/libPrj/api/seatAction', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ seatId: seatId, action: actionName, account: myAccount })
+                        });
+                        const result = await res.json();
+                        if (result.code === 200) {
+                            alert(successMsg);
+                            popup.style.display = 'none'; 
+                            renderDynamicMap(); 
+                        } else {
+                            alert(result.message);
+                        }
+                    } catch (error) {
+                        alert('网络请求失败，请检查服务器！');
+                    }
+                }
+
+                const checkInBtn = document.getElementById('checkInBtn');
+                if (checkInBtn) checkInBtn.onclick = () => sendSeatAction('checkIn', '签到成功！祝您学习愉快。');
+
+                const tempLeaveBtn = document.getElementById('tempLeaveBtn');
+                if (tempLeaveBtn) tempLeaveBtn.onclick = () => sendSeatAction('tempLeave', '已暂离，系统将为您保留座位30分钟。');
+
+                const resumeBtn = document.getElementById('resumeBtn');
+                if (resumeBtn) resumeBtn.onclick = () => sendSeatAction('resume', '欢迎回来！已恢复入座状态。');
+
+                const cancelBtn = document.getElementById('cancelSeatBtn');
+                if (cancelBtn) {
+                    cancelBtn.onclick = async function() {
+                        if (confirm(`确定要释放座位 ${seatId} 吗？`)) {
+                            try {
+                                const res = await fetch('http://localhost:8080/libPrj/api/cancelSeat', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ seatId: seatId })
+                                });
+                                const result = await res.json();
+                                if (result.code === 200) {
+                                    alert('退座成功！');
+                                    popup.style.display = 'none'; 
+                                    renderDynamicMap(); 
+                                } else {
+                                    alert(result.message);
+                                }
+                            } catch (error) {
+                                alert('网络请求失败，请检查服务器！');
+                            }
+                        }
+                    };
+                }
+
+                const reportBtn = document.getElementById('reportSeatBtn');
+                if (reportBtn) {
+                    reportBtn.onclick = async function() {
+                        const reason = prompt(`准备举报座位 ${seatId} (占用人: ${seatUser})\n请输入举报原因（如：长时间离座、物品占座等）：`, "物品恶意占座");
+                        if (reason !== null && reason.trim() !== '') {
+                            try {
+                                const res = await fetch('http://localhost:8080/libPrj/api/submitReport', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ 
+                                        reportedAccount: seatUser, 
+                                        reportedName: "未知", 
+                                        reportType: reason, 
+                                        seatId: seatId 
+                                    })
+                                });
+                                const result = await res.json();
+                                if (result.code === 200) {
+                                    alert(result.message);
+                                    popup.style.display = 'none'; 
+                                } else {
+                                    alert(result.message);
+                                }
+                            } catch (error) {
+                                console.error(error);
+                                alert('网络请求失败，请检查服务器！');
+                            }
+                        }
+                    };
+                }
+            }
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        const popup = document.getElementById('popup');
+        if (popup.style.display === 'block') {
+            if (!popup.contains(e.target) && !e.target.classList.contains('seat')) {
+                popup.style.display = 'none';
+            }
+        }
+    });
+
+ // ================= 快速预约功能逻辑 =================
+    let freeSeatsPool = []; // 存放当前屏幕上所有的空闲座位
+    let currentSuggestIndex = 0; // 记录当前按顺序推荐到了第几个
+    let currentSuggestedSeatId = null; // 当前推荐的座位号
+
+    // 点击快速预约按钮
+    document.querySelector('.quick-book-btn').addEventListener('click', () => {
+        // 直接从页面上抓取当前渲染出来的所有绿色（空闲）座位
+        const freeSeatsElements = document.querySelectorAll('.seat.free');
+        
+        if (freeSeatsElements.length === 0) {
+            alert('当前区域暂无空闲座位，请切换楼层或区域后再试！');
+            return;
+        }
+        
+        // 把 DOM 节点的座位号提取出来存进数组，并按从小到大进行排序
+        // 比如：1F-A-001, 1F-A-002, 1F-A-005...
+        freeSeatsPool = Array.from(freeSeatsElements)
+            .map(seat => seat.getAttribute('data-id'))
+            .sort(); 
+        
+        // 每次点击快速预约，都重置为从第 1 个空闲座位开始推荐
+        currentSuggestIndex = 0; 
+        suggestSequentialSeat();
+        
+        // 显示弹窗
+        document.getElementById('quick-book-modal').style.display = 'flex';
+    });
+
+    // 顺序推荐算法（提取当前索引对应的座位）
+    function suggestSequentialSeat() {
+        if (freeSeatsPool.length === 0) return;
+        currentSuggestedSeatId = freeSeatsPool[currentSuggestIndex];
+        document.getElementById('suggested-seat-id').textContent = currentSuggestedSeatId;
+    }
+
+    // “换一个”按钮逻辑（按顺序往下找）
+    function findAnotherSeat() {
+        if (freeSeatsPool.length <= 1) {
+            alert('当前区域空闲座位不多啦，没有其他可选座位了。');
+            return;
+        }
+        
+        // 索引加 1，指向下一个座位
+        currentSuggestIndex++;
+        
+        // 如果已经推荐到了最后一个，给个提示并循环回第一个
+        if (currentSuggestIndex >= freeSeatsPool.length) {
+            alert('已经为您浏览完所有空闲座位，现在重新从头开始为您推荐。');
+            currentSuggestIndex = 0; 
+        }
+        
+        // 更新显示的座位
+        suggestSequentialSeat();
+    }
+
+    // 关闭弹窗
+    function closeQuickBook() {
+        document.getElementById('quick-book-modal').style.display = 'none';
+        currentSuggestedSeatId = null;
+        currentSuggestIndex = 0; // 关闭时顺便重置索引
+    }
+
+    // 确认预约逻辑（复用之前的预约接口）
+    async function confirmQuickBook() {
+        if (!currentSuggestedSeatId) return;
+        
+        const myAccount = localStorage.getItem('lib_account'); 
+        
+        try {
+            const res = await fetch('http://localhost:8080/libPrj/api/bookSeat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ seatId: currentSuggestedSeatId, userAccount: myAccount })
+            });
+            const result = await res.json();
+            
+            if (result.code === 200) {
+                alert(`太棒了！座位 ${currentSuggestedSeatId} 预约成功！`);
+                closeQuickBook();
+                // 预约成功后跳转到个人中心
+                window.location.href = 'student_profile.html';
+            } else {
+                alert('预约失败：' + result.message);
+            }
+        } catch (error) {
+            alert('网络请求失败，请检查服务器！');
+            console.error(error);
+        }
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>数字图书馆 - 首页</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: #f5f7fa; color: #333; padding: 1rem; overflow-x: hidden; position: relative; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid #eee; }
+        .page-title { font-size: 1.3rem; font-weight: 800; color: #0b3b5c; letter-spacing: 1px; }
+        .progress-wrapper { position: absolute; top: 1rem; right: 1rem; }
+        .progress-circle { width: 90px; height: 90px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; }
+        .progress-bg { width: 100%; height: 100%; border-radius: 50%; background: #eaeaea; position: absolute; top: 0; left: 0; clip-path: circle(50% at center); border: 8px solid transparent; box-sizing: border-box; }
+        .progress-bar { width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(#409eff 0deg, #409eff 0deg, transparent 0deg); position: absolute; top: 0; left: 0; clip-path: circle(42% at center); transition: all 0.5s ease; }
+        .progress-text { font-size: 1.3rem; font-weight: 600; color: #333; z-index: 1; }
+        .user-info { display: flex; align-items: center; gap: 1rem; margin: 1.5rem 0; }
+        .avatar { width: 55px; height: 55px; border-radius: 50%; background: linear-gradient(135deg, #0b3b5c, #1890ff); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 10px rgba(24,144,255,0.3); }
+        .user-details { flex: 1; }
+        .user-name { font-size: 1.2rem; font-weight: 800; color: #222; }
+        .user-id { font-size: 0.9rem; color: #666; margin-top: 3px; }
+        .timer { font-size: 2rem; font-weight: 800; margin: 1rem 0 1.5rem 0; color: #0b3b5c; letter-spacing: 2px; }
+        
+        .hero-card { background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%); padding: 1.5rem; border-radius: 20px; box-shadow: 0 8px 20px rgba(11,59,92,0.08); margin-bottom: 1.5rem; border: 1px solid #e1ecfa; position: relative; overflow: hidden; }
+        .hero-card::before { content: ''; position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(24,144,255,0.05); border-radius: 50%; }
+        
+        .card { background: white; padding: 1.2rem; border-radius: 16px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); margin: 1rem 0; }
+        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: #333; }
+        
+        .icon-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem 1rem; }
+        
+        .icon-item { text-align: center; padding: 0.8rem 0; border-radius: 12px; transition: background 0.2s; cursor: pointer; }
+        .icon-item:hover { background: #f5f8fa; }
+        .icon { font-size: 1.6rem; color: #0b3b5c; margin-bottom: 0.6rem; }
+        .icon-text { font-size: 0.85rem; color: #555; font-weight: 500; }
+        
+        .action-btn { flex: 1; padding: 10px 0; border: none; border-radius: 12px; font-size: 0.95rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.1s; }
+        .action-btn:active { transform: scale(0.95); }
+        .btn-green { background: #52c41a; color: white; }
+        .btn-orange { background: #faad14; color: white; }
+        .btn-blue { background: #1890ff; color: white; }
+        .btn-red-outline { background: white; color: #ff4d4f; border: 1px solid #ff4d4f; }
+        
+        @media (max-width: 400px) {
+            .user-info { flex-direction: column; align-items: flex-start; }
+            .progress-circle { width: 80px; height: 80px; }
+            .timer { font-size: 1.5rem; }
+            .icon-grid { grid-template-columns: repeat(3, 1fr); gap: 1rem 0.5rem;} 
+        }
+        @keyframes popIn { to { transform: scale(1); } }
+
+        /* ================= 扫码弹窗专属样式 ================= */
+        .scanner-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); /* 扫码时背景变深 */
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 2000; backdrop-filter: blur(5px);
+        }
+        .scanner-box {
+            width: 260px; height: 260px; position: relative; margin: 20px 0;
+            background: rgba(255,255,255,0.05); border-radius: 16px;
+            box-shadow: 0 0 0 4000px rgba(0,0,0,0.4); /* 突出中间的扫码区 */
+            overflow: hidden;
+        }
+        /* 四个角的绿色边框 */
+        .scan-corner { position: absolute; width: 40px; height: 40px; border-color: #52c41a; border-style: solid; }
+        .top-left { top: 0; left: 0; border-width: 4px 0 0 4px; border-top-left-radius: 16px; }
+        .top-right { top: 0; right: 0; border-width: 4px 4px 0 0; border-top-right-radius: 16px; }
+        .bottom-left { bottom: 0; left: 0; border-width: 0 0 4px 4px; border-bottom-left-radius: 16px; }
+        .bottom-right { bottom: 0; right: 0; border-width: 0 4px 4px 0; border-bottom-right-radius: 16px; }
+        
+        /* 上下移动的扫描线动画 */
+        .scanner-line {
+            width: 100%; height: 3px; background: #52c41a;
+            position: absolute; top: 0; left: 0;
+            box-shadow: 0 0 15px #52c41a, 0 0 30px #52c41a;
+            animation: scanAnim 2.5s infinite linear;
+        }
+        @keyframes scanAnim {
+            0% { top: -10px; opacity: 0; }
+            10% { opacity: 1; }
+            50% { top: 100%; }
+            90% { opacity: 1; }
+            100% { top: -10px; opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="page-title">个人中心</div>
+        <i class="fas fa-sync-alt" style="font-size: 1.2rem; color: #666; cursor: pointer;" onclick="window.location.reload()"></i>
+    </div>
+
+    <div class="progress-wrapper">
+        <div class="progress-circle">
+            <div class="progress-bg"></div>
+            <div class="progress-bar"></div>
+            <div class="progress-text">0%</div>
+        </div>
+    </div>
+
+    <div class="user-info">
+        <div class="avatar"><i class="fas fa-user-graduate"></i></div>
+        <div class="user-details">
+            <div class="user-name" id="userName">加载中...</div>
+            <div class="user-id" id="userId">学号：加载中...</div>
+        </div>
+    </div>
+
+    <div class="timer">00:00:00</div>
+
+    <div class="hero-card" id="seatConsole">
+        <div id="noSeatState" style="text-align: center; padding: 0.5rem 0;">
+            <i class="fas fa-couch" style="font-size: 3.5rem; color: #cbe0f5; margin-bottom: 1rem;"></i>
+            <h3 style="color: #0b3b5c; margin-bottom: 0.3rem;">当前暂无座位</h3>
+            <p style="color: #888; font-size: 0.9rem; margin-bottom: 1.5rem;">去挑选一个心仪的学习位置吧</p>
+            <button onclick="window.location.href='seat-map.html'" style="background: #0b3b5c; color: white; border: none; padding: 12px 40px; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 6px 16px rgba(11,59,92,0.25);"><i class="fas fa-map-marked-alt"></i> 马上前往选座</button>
+        </div>
+
+        <div id="hasSeatState" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div>
+                    <div style="font-size: 0.85rem; color: #666; font-weight: 600;"><i class="fas fa-star" style="color:#faad14;"></i> 我的专属座位</div>
+                    <div id="consoleSeatId" style="font-size: 2.2rem; font-weight: 900; color: #0b3b5c; margin-top: 2px; letter-spacing: 1px;">加载中</div>
+                </div>
+                <div id="consoleSeatStatus" style="padding: 6px 14px; background: #e6f7ff; color: #1890ff; border-radius: 20px; font-weight: bold; font-size: 0.85rem; border: 1px solid #91d5ff;">状态加载中</div>
+            </div>
+            <div id="consoleActionBtns" style="display: flex; gap: 12px; margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">功能</div>
+        <div class="icon-grid">
+            <div class="icon-item">
+                <i class="fas fa-calendar-check icon"></i>
+                <div class="icon-text">历史记录</div>
+            </div>
+            <div class="icon-item">
+                <i class="fas fa-bell icon"></i>
+                <div class="icon-text">系统通知</div>
+            </div>
+            <div class="icon-item">
+                <i class="fas fa-cog icon"></i>
+                <div class="icon-text">常用设置</div>
+            </div>
+            <div class="icon-item">
+                <i class="fas fa-id-card icon"></i>
+                <div class="icon-text">个人资料</div>
+            </div>
+            <div class="icon-item">
+                <i class="fas fa-question-circle icon"></i>
+                <div class="icon-text">帮助中心</div>
+            </div>
+            <div class="icon-item" id="logoutBtn">
+                <i class="fas fa-power-off icon" style="color: #ff4d4f;"></i>
+                <div class="icon-text" style="color: #ff4d4f;">退出登录</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="universalModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+        <div style="background: white; width: 85%; max-width: 400px; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transform: scale(0.95); transition: all 0.3s ease; animation: popIn 0.3s forwards;">
+            <div style="padding: 16px 20px; background: #0b3b5c; color: white; display: flex; justify-content: space-between; align-items: center;">
+                <h3 id="modalTitle" style="margin: 0; font-size: 1.1rem; font-weight: 600;">标题</h3>
+                <i class="fas fa-times" style="cursor: pointer; font-size: 1.2rem;" onclick="closeModal()"></i>
+            </div>
+            <div id="modalBody" style="padding: 24px 20px; min-height: 120px; color: #444; font-size: 0.95rem; line-height: 1.6;"></div>
+        </div>
+    </div>
+    
+    <div id="scannerModal" class="scanner-overlay" style="display: none;">
+        <h2 style="color: white; font-weight: 500; letter-spacing: 2px;">扫一扫</h2>
+        <p style="color: #aaa; font-size: 0.9rem; margin-top: 10px;">请对准桌面的座位二维码</p>
+        
+        <div class="scanner-box">
+            <div class="scanner-line"></div>
+            <div class="scan-corner top-left"></div>
+            <div class="scan-corner top-right"></div>
+            <div class="scan-corner bottom-left"></div>
+            <div class="scan-corner bottom-right"></div>
+        </div>
+        
+        <div style="display: flex; gap: 20px; margin-top: 40px;">
+            <button onclick="closeScanner()" style="padding: 12px 30px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 30px; font-size: 1rem; cursor: pointer;">取消扫码</button>
+            <button onclick="simulateScanSuccess()" style="padding: 12px 30px; background: #52c41a; color: white; border: none; border-radius: 30px; font-size: 1rem; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(82, 196, 26, 0.4);">测试: 模拟扫码成功</button>
+        </div>
+    </div>
+
+    <script>
+    const userId = localStorage.getItem('lib_account') || '未知学号';
+    let currentSeatId = ''; 
+
+    // 1. 获取当前座位并渲染卡片
+    window.addEventListener('load', async function () { 
+        const userName = localStorage.getItem('lib_name') || '未知用户';
+        document.getElementById('userName').textContent = userName;
+        document.getElementById('userId').textContent = `学号：${userId}`;
+
+        let usedSeconds = 0;
+        const totalSeconds = 7200; 
+
+        try {
+            const response = await fetch("http://localhost:8080/libPrj/api/mySeat?userAccount=" + userId);
+            const result = await response.json();
+            
+            const noSeatState = document.getElementById('noSeatState');
+            const hasSeatState = document.getElementById('hasSeatState');
+            const btnContainer = document.getElementById('consoleActionBtns');
+            
+            if (result.code === 200) {
+                noSeatState.style.display = 'none';
+                hasSeatState.style.display = 'block';
+                
+                const seat = result.data;
+                currentSeatId = seat.seatId;
+                document.getElementById('consoleSeatId').textContent = seat.seatId;
+                
+                let statusName = '';
+                let statusBg = '';
+                let statusColor = '';
+                let btnsHtml = '';
+
+             // 修改后的代码：触发扫码弹窗，而不是直接调用接口
+                if (seat.status === 'booked') {
+                    statusName = '等待入座'; statusBg = '#e6f7ff'; statusColor = '#1890ff';
+                    btnsHtml = `<button class="action-btn btn-green" onclick="openScanner()"><i class="fas fa-qrcode"></i> 扫码入座</button>`;
+                 // 修改后的代码
+                } else if (seat.status === 'occupied' || seat.status === 'used') {
+                    statusName = '正在使用'; statusBg = '#f6ffed'; statusColor = '#52c41a';
+                    
+                    // 🌟 核心修改：优先使用后端传过来的真实使用秒数，如果后端没传，就从 0 开始
+                    usedSeconds = seat.usedSeconds || 0; 
+                    
+                    btnsHtml = `<button class="action-btn btn-orange" onclick="handleAction('tempLeave')"><i class="fas fa-clock"></i> 临时离开</button>`;
+                } else if (seat.status === 'temporary') {
+                    statusName = '暂离中'; statusBg = '#fffbe6'; statusColor = '#faad14';
+                    btnsHtml = `<button class="action-btn btn-blue" onclick="handleAction('resume')"><i class="fas fa-undo-alt"></i> 恢复入座</button>`;
+                }
+
+                btnsHtml += `<button class="action-btn btn-red-outline" onclick="handleCancel()"><i class="fas fa-sign-out-alt"></i> 结束使用</button>`;
+                btnContainer.innerHTML = btnsHtml;
+
+                const statusLabel = document.getElementById('consoleSeatStatus');
+                statusLabel.textContent = statusName;
+                statusLabel.style.background = statusBg;
+                statusLabel.style.color = statusColor;
+                statusLabel.style.borderColor = statusColor;
+
+            } else {
+                noSeatState.style.display = 'block';
+                hasSeatState.style.display = 'none';
+                usedSeconds = 0;
+            }
+        } catch (error) {
+            console.error(error);
+        }
+
+        function updateTimerAndProgress() {
+            // 1. 先计算并渲染时间文字和进度条（无论是不是0秒都要渲染）
+            const hours = Math.floor(usedSeconds / 3600).toString().padStart(2, '0');
+            const minutes = Math.floor((usedSeconds % 3600) / 60).toString().padStart(2, '0');
+            const secs = (usedSeconds % 60).toString().padStart(2, '0');
+            document.querySelector('.timer').textContent = `${hours}:${minutes}:${secs}`;
+
+            const percent = Math.min(Math.round((usedSeconds / totalSeconds) * 100), 100);
+            document.querySelector('.progress-text').textContent = `${percent}%`;
+
+            const angle = (percent / 100) * 360;
+            document.querySelector('.progress-bar').style.background = `conic-gradient(#409eff 0deg, #409eff ${angle}deg, transparent ${angle}deg)`;
+
+            // 2. 只有当确实有座位，并且状态是"正在使用"或"暂离中"时，才让时间递增！
+            const isUsing = document.getElementById('hasSeatState').style.display === 'block';
+            const statusText = document.getElementById('consoleSeatStatus').textContent;
+            
+            if (isUsing && (statusText === '正在使用' || statusText === '暂离中')) {
+                if (usedSeconds < totalSeconds) usedSeconds++;
+            }
+        }
+        updateTimerAndProgress();
+        setInterval(updateTimerAndProgress, 1000);
+    });
+
+    // 2. 处理卡片按钮
+    async function handleAction(actionName) {
+        try {
+            const res = await fetch('http://localhost:8080/libPrj/api/seatAction', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ seatId: currentSeatId, action: actionName, account: userId })
+            });
+            const result = await res.json();
+            if (result.code === 200) {
+                window.location.reload(); 
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            alert('网络异常');
+        }
+    }
+
+    async function handleCancel() {
+        if (!confirm('确定要彻底释放该座位吗？离开后将无法恢复。')) return;
+        try {
+            const res = await fetch('http://localhost:8080/libPrj/api/cancelSeat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ seatId: currentSeatId })
+            });
+            const result = await res.json();
+            if (result.code === 200) {
+                window.location.reload(); 
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            alert('网络异常');
+        }
+    }
+
+    // 3. 六宫格通用弹窗逻辑
+    document.querySelectorAll('.icon-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const text = this.querySelector('.icon-text').textContent.trim();
+            if (text === '退出登录') {
+                if (confirm('确定要退出账号吗？')) {
+                    localStorage.clear();
+                    window.location.href = 'login.html';
+                }
+            } else {
+                openModal(text);
+            }
+        });
+    });
+
+    // 🌟 核心修改 3：将映射字典也改为 预约历史
+    const tabTypeMap = { '预约历史': 'book', '使用历史': 'finish', '违约历史': 'violation' };
+
+    async function loadHistoryDataToModal(tabName) {
+        const historyContainer = document.querySelector('.modal-order-history');
+        if (!historyContainer) return;
+        historyContainer.innerHTML = '<div style="text-align:center; padding: 30px; color:#999;"><i class="fas fa-spinner fa-spin"></i> 加载中...</div>';
+
+        try {
+            const res = await fetch(`http://localhost:8080/libPrj/api/history?account=${userId}&type=${tabTypeMap[tabName]}`);
+            const result = await res.json();
+            historyContainer.innerHTML = ''; 
+
+            if (result.code === 200 && result.data.length > 0) {
+                result.data.forEach(item => {
+                    let textDesc = '', iconColor = '';
+                    if (tabTypeMap[tabName] === 'book') { textDesc = `成功预约 ${item.seatId}`; iconColor = '#52c41a'; } 
+                    else if (tabTypeMap[tabName] === 'finish') { textDesc = `完成使用 ${item.seatId}`; iconColor = '#1890ff'; } 
+                    else if (tabTypeMap[tabName] === 'violation') { textDesc = `违规：${item.detail}`; iconColor = '#ff4d4f'; }
+
+                    const shortTime = item.time.length > 16 ? item.time.substring(5, 16) : item.time;
+                    historyContainer.innerHTML += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0;">
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <span style="color: #333; font-weight: 600; font-size:0.9rem;">${textDesc}</span>
+                                <span style="color: #999; font-size: 0.8rem;"><i class="far fa-clock"></i> ${shortTime}</span>
+                            </div>
+                            <i class="fas fa-chevron-right" style="color: ${iconColor}; opacity: 0.7;"></i>
+                        </div>`;
+                });
+            } else {
+                historyContainer.innerHTML = '<div style="text-align:center; padding: 30px; color:#999;">暂无相关记录 🍃</div>';
+            }
+        } catch (error) {
+            historyContainer.innerHTML = '<div style="text-align:center; padding: 30px; color:#ff4d4f;">网络异常</div>';
+        }
+    }
+
+    function openModal(title) {
+        document.getElementById('modalTitle').textContent = title;
+        const body = document.getElementById('modalBody');
+        const universalModal = document.getElementById('universalModal');
+        const userName = localStorage.getItem('lib_name') || '未知用户';
+
+        if (title === '系统通知') {
+            body.innerHTML = `<ul style="padding-left: 20px; color:#555; margin:0;"><li style="margin-bottom: 10px;">欢迎使用数字图书馆！</li><li>请注意保持馆内安静。</li></ul>`;
+        } else if (title === '个人资料') {
+            body.innerHTML = `
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                    <p style="margin: 5px 0;"><strong>姓名：</strong>${userName}</p>
+                    <p style="margin: 5px 0;"><strong>学号：</strong>${userId}</p>
+                    <p style="margin: 5px 0; color: #52c41a;"><strong>状态：</strong>账号正常可用</p>
+                </div>`;
+        }else if (title === '帮助中心') {
+            body.innerHTML = `
+                <p style="margin-bottom: 10px;"><strong>Q：如何释放座位？</strong><br>
+                A：在地图上点击自己的座位即可退座。</p>
+                <p style="margin-bottom: 10px;"><strong>Q：暂离怎么算？</strong><br>
+                A：暂离限时60分钟，超时系统将自动判定为违约并释放座位。</p>`;
+        }else if (title === '历史记录') { // 🌟 匹配外面的新名字
+            body.innerHTML = `
+                <div class="modal-tabs" style="display: flex; gap: 1rem; border-bottom: 1px solid #eee; margin-bottom: 10px; padding-bottom: 5px;">
+                    <div class="modal-tab active" style="font-size: 0.95rem; font-weight: 600; cursor: pointer; color: #0b3b5c; border-bottom: 2px solid #0b3b5c; padding-bottom: 4px;">预约历史</div>
+                    <div class="modal-tab" style="font-size: 0.95rem; font-weight: 600; cursor: pointer; color: #999; padding-bottom: 4px;">使用历史</div>
+                    <div class="modal-tab" style="font-size: 0.95rem; font-weight: 600; cursor: pointer; color: #999; padding-bottom: 4px;">违约历史</div>
+                </div>
+                <div class="modal-order-history" style="max-height: 250px; overflow-y: auto;"></div>`;
+
+            const modalTabs = universalModal.querySelectorAll('.modal-tab');
+            modalTabs.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    modalTabs.forEach(t => { t.style.color = '#999'; t.style.borderBottom = 'none'; t.classList.remove('active'); });
+                    e.target.style.color = '#0b3b5c'; e.target.style.borderBottom = '2px solid #0b3b5c'; e.target.classList.add('active');
+                    loadHistoryDataToModal(e.target.textContent.trim());
+                });
+            });
+            loadHistoryDataToModal('预约历史'); // 🌟 默认加载预约历史
+        } else {
+            body.innerHTML = `<div style="text-align:center; padding: 20px; color:#999;"><i class="fas fa-tools" style="font-size: 2.5rem; margin-bottom: 15px; color: #d0d7de;"></i><br><strong>模块开发中...</strong></div>`;
+        }
+        universalModal.style.display = 'flex';
+    }
+
+    function closeModal() { document.getElementById('universalModal').style.display = 'none'; }
+    
+    // ================= 4. 扫码签到逻辑 =================
+    function openScanner() {
+        // 打开扫码 UI
+        document.getElementById('scannerModal').style.display = 'flex';
+        // 如果后期接入真实摄像头，在这里初始化调用 navigator.mediaDevices.getUserMedia
+    }
+
+    function closeScanner() {
+        // 关闭扫码 UI
+        document.getElementById('scannerModal').style.display = 'none';
+        // 如果后期接入真实摄像头，在这里关闭视频流
+    }
+
+    function simulateScanSuccess() {
+        // 模拟扫码识别到了二维码，系统校验成功后，调用原来的 checkIn 接口
+        // 增加一点小小的延迟，显得更真实
+        const btn = document.querySelector('#scannerModal .btn-confirm') || document.activeElement;
+        const originalText = btn.textContent;
+        btn.textContent = "识别中...";
+        
+        setTimeout(() => {
+            closeScanner();
+            btn.textContent = originalText;
+            // 真实触发签到接口
+            handleAction('checkIn');
+        }, 800);
+    }
+    </script>
+</body>
+</html>
