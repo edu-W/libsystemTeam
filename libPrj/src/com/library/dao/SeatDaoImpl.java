@@ -37,6 +37,7 @@ public class SeatDaoImpl implements SeatDao {
                 seat.setArea(rs.getString("area"));
                 seat.setStatus(rs.getString("status"));
                 seat.setUserAccount(rs.getString("user_account"));
+                seat.setLeaveTime(rs.getTimestamp("leave_time"));
                 seatList.add(seat);
             }
         } catch (Exception e) {
@@ -130,6 +131,11 @@ public class SeatDaoImpl implements SeatDao {
                 seat.setArea(rs.getString("area"));
                 seat.setStatus(rs.getString("status"));
                 seat.setUserAccount(rs.getString("user_account"));
+                
+                // 🌟 核心修复：把数据库里的时间读取出来塞给实体类！
+                // (这样 UserProfileServlet 才能把时间打包发给前端)
+                seat.setBookTime(rs.getTimestamp("book_time"));
+                seat.setLeaveTime(rs.getTimestamp("leave_time"));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -139,7 +145,7 @@ public class SeatDaoImpl implements SeatDao {
         return seat;
     }
 
-    // 🌟 修复 1：补全根据座位号查座位的逻辑，退座时需要用它来找原来的主人
+    // 修复 1：补全根据座位号查座位的逻辑，退座时需要用它来找原来的主人
     @Override
     public lib_seat getSeatById(String seatId) {
         lib_seat seat = null;
@@ -275,7 +281,7 @@ public class SeatDaoImpl implements SeatDao {
         return list;
     }
 
-    // 🌟 新增的记账小能手 (无需修改，保持原样)
+    //  新增的记账小能手 (无需修改，保持原样)
     public void addSeatRecord(String account, String seatId, String actionType) {
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -309,5 +315,171 @@ public class SeatDaoImpl implements SeatDao {
             e.printStackTrace();
         }
         return seconds;
+    }
+ // 实现预约并记录时间的逻辑
+    @Override
+    public boolean bookSeatWithTime(String seatId, String userAccount) {
+        boolean isSuccess = false;
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        try {
+            conn = DBUtil.getConnection();
+            // 状态改为 booked，并且把 book_time 设置为当前时间
+            String sql = "UPDATE lib_seat SET status = 'booked', user_account = ?, book_time = NOW() WHERE seat_id = ?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, userAccount);
+            pstmt.setString(2, seatId);
+            int rows = pstmt.executeUpdate();
+            if (rows > 0) {
+                // 记账（复用你之前的记账逻辑）
+                addSeatRecord(userAccount, seatId, "book");
+                isSuccess = true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, null);
+        }
+        return isSuccess;
+    }
+
+    // 实现签到并清空预约时间、开始计时的逻辑
+    @Override
+    public boolean checkInSeat(String seatId, String userAccount) {
+        boolean isSuccess = false;
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        try {
+            conn = DBUtil.getConnection();
+            // 状态转为 used，记录正式入座时间 check_in_time，并把倒计时用的 book_time 置空
+            String sql = "UPDATE lib_seat SET status = 'used', check_in_time = NOW(), book_time = NULL WHERE seat_id = ? AND user_account = ?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, seatId);
+            pstmt.setString(2, userAccount);
+            int rows = pstmt.executeUpdate();
+            if (rows > 0) {
+                isSuccess = true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, null);
+        }
+        return isSuccess;
+    }
+    @Override
+    public boolean leaveSeat(String seatId, String userAccount) {
+        boolean isSuccess = false;
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        try {
+            conn = DBUtil.getConnection();
+            // 状态改为 temporary，并记录当前时间为 leave_time
+            String sql = "UPDATE lib_seat SET status = 'temporary', leave_time = NOW() WHERE seat_id = ? AND user_account = ? AND status = 'used'";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, seatId);
+            pstmt.setString(2, userAccount);
+            int rows = pstmt.executeUpdate();
+            if (rows > 0) {
+                isSuccess = true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, null);
+        }
+        return isSuccess;
+    }
+
+    @Override
+    public boolean returnSeat(String seatId, String userAccount) {
+        boolean isSuccess = false;
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        try {
+            conn = DBUtil.getConnection();
+            // 状态恢复为 used，并清空 leave_time
+            String sql = "UPDATE lib_seat SET status = 'used', leave_time = NULL WHERE seat_id = ? AND user_account = ?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, seatId);
+            pstmt.setString(2, userAccount);
+            int rows = pstmt.executeUpdate();
+            if (rows > 0) {
+                isSuccess = true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, null);
+        }
+        return isSuccess;
+    }
+    @Override
+    public void autoReleaseTimeoutSeats() {
+        Connection conn = null;
+        PreparedStatement pstmtSelect = null;
+        PreparedStatement pstmtUpdate = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBUtil.getConnection();
+            
+            String updateSql = "UPDATE lib_seat SET status = 'free', user_account = NULL, book_time = NULL, leave_time = NULL, check_in_time = NULL WHERE seat_id = ?";
+            pstmtUpdate = conn.prepareStatement(updateSql);
+
+            // ==========================================
+            // 1. 抓取【预约未到】的违约者
+            // ==========================================
+            String sqlBooked = "SELECT seat_id, user_account FROM lib_seat WHERE status = 'booked' AND TIMESTAMPDIFF(MINUTE, book_time, NOW()) >= 30";
+            pstmtSelect = conn.prepareStatement(sqlBooked);
+            rs = pstmtSelect.executeQuery();
+            
+            while (rs.next()) {
+                String seatId = rs.getString("seat_id");
+                String account = rs.getString("user_account");
+                
+                pstmtUpdate.setString(1, seatId);
+                pstmtUpdate.executeUpdate();
+                
+                // 🌟 修复点 1：把超长的 "violation_book_timeout" 改为 "violation"
+                addSeatRecord(account, seatId, "violation");
+                System.out.println("[系统巡检] 座位 " + seatId + " 预约超时，已释放。记录用户 " + account + " 违约。");
+                
+                // 触发阶梯扣分与冻结
+                new UserDaoImpl().punishUserForViolation(account);
+            }
+            rs.close();
+            pstmtSelect.close();
+            
+            // ==========================================
+            // 2. 抓取【暂离超时】的违约者
+            // ==========================================
+            String sqlLeave = "SELECT seat_id, user_account FROM lib_seat WHERE status = 'temporary' AND TIMESTAMPDIFF(MINUTE, leave_time, NOW()) >= 30";
+            pstmtSelect = conn.prepareStatement(sqlLeave);
+            rs = pstmtSelect.executeQuery();
+            
+            while (rs.next()) {
+                String seatId = rs.getString("seat_id");
+                String account = rs.getString("user_account");
+                
+                pstmtUpdate.setString(1, seatId);
+                pstmtUpdate.executeUpdate();
+                
+                // 🌟 修复点 2：把超长的 "violation_leave_timeout" 改为 "violation"
+                addSeatRecord(account, seatId, "violation");
+                System.out.println("[系统巡检] 座位 " + seatId + " 暂离超时，已释放。记录用户 " + account + " 违约。");
+                
+                // 触发阶梯扣分与冻结
+                new UserDaoImpl().punishUserForViolation(account);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmtSelect, rs);
+            if (pstmtUpdate != null) {
+                try { pstmtUpdate.close(); } catch (java.sql.SQLException e) { e.printStackTrace(); }
+            }
+        }
     }
 }

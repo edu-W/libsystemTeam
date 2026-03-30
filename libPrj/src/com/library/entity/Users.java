@@ -8,6 +8,9 @@ public class Users {
     private String password;
     private String name;
     private String role;
+    private int credit;
+    private String status;
+    private java.sql.Timestamp freezeEndTime;
 //    private Date createTime;
 
     // 2. 无参构造函数（必须有）
@@ -47,8 +50,7 @@ public class Users {
     public void setRole(String role) {
         this.role = role;
     }
- // 增加账号状态字段
-    private String status;
+ 
 
     public String getStatus() {
         return status;
@@ -57,7 +59,15 @@ public class Users {
     public void setStatus(String status) {
         this.status = status;
     }
-
+    public int getCredit() { 
+    	return credit; 
+    	}
+    public void setCredit(int credit) {
+    	this.credit = credit; 
+    	}
+    
+    public java.sql.Timestamp getFreezeEndTime() { return freezeEndTime; }
+    public void setFreezeEndTime(java.sql.Timestamp freezeEndTime) { this.freezeEndTime = freezeEndTime; }
 //    public Date getCreateTime() {
 //        return createTime;
 //    }

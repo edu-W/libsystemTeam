@@ -6,6 +6,7 @@ import com.library.util.DBUtil;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,40 +21,29 @@ public class UserDaoImpl implements UsersDao {
         Users user = null;
 
         try {
-            // 1. 获取连接
             conn = DBUtil.getConnection();
-            
-            // 2. 编写 SQL 语句 (? 是占位符，防止 SQL 注入攻击)
             String sql = "SELECT * FROM Users WHERE account = ? AND password = ?";
-            
-            // 3. 预编译 SQL
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, account);
             pstmt.setString(2, password);
-            
-            // 4. 执行查询
             rs = pstmt.executeQuery();
             
-            // 5. 处理结果集
             if (rs.next()) {
-                // 如果查到了，就把数据库里的数据塞进我们的 Java 对象里
                 user = new Users();
                 user.setAccount(rs.getString("account"));
                 user.setPassword(rs.getString("password"));
                 user.setName(rs.getString("name"));
                 user.setRole(rs.getString("role"));
                 user.setStatus(rs.getString("status"));
-//                user.setCreateTime(rs.getTimestamp("create_time"));
             }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            // 6. 释放资源
             DBUtil.close(conn, pstmt, rs);
         }
-        
-        return user; // 如果没查到，这里返回的就是 null
+        return user; 
     }
+
     @Override
     public List<Users> getAllStudents() {
         List<Users> list = new ArrayList<>();
@@ -63,8 +53,6 @@ public class UserDaoImpl implements UsersDao {
 
         try {
             conn = DBUtil.getConnection();
-            // SQL：只查学生，并且按照学号排个序，方便管理员看
-            // ⚠️ 记得把 Users 换成你真实的表名！
             String sql = "SELECT * FROM users WHERE role = 'student' ORDER BY account ASC";
             pstmt = conn.prepareStatement(sql);
             rs = pstmt.executeQuery();
@@ -75,7 +63,6 @@ public class UserDaoImpl implements UsersDao {
                 user.setName(rs.getString("name"));
                 user.setRole(rs.getString("role"));
                 user.setStatus(rs.getString("status")); 
-                // 密码千万别查出来传给前端，保护隐私！
                 list.add(user);
             }
         } catch (Exception e) {
@@ -94,9 +81,8 @@ public class UserDaoImpl implements UsersDao {
 
         try {
             conn = DBUtil.getConnection();
-            // SQL：一键解封！把状态改回 normal
-            // ⚠️ 同样核对一下 Users 表名
-            String sql = "UPDATE Users SET status = 'normal' WHERE account = ?";
+            // 一键解封！把状态改回 normal，并清空冻结时间
+            String sql = "UPDATE Users SET status = 'normal', freeze_end_time = NULL WHERE account = ?";
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, account);
             
@@ -111,23 +97,123 @@ public class UserDaoImpl implements UsersDao {
         return isSuccess;
     }
 
+    // 🌟 补充完整：根据账号获取用户详细信息（包含冻结时间和信用分）
     @Override
     public Users getUserByAccount(String account) {
-        // 这个方法暂时留空，以后有需要（比如判断账号是否已存在）再写
-        return null; 
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        Users user = null;
+
+        try {
+            conn = DBUtil.getConnection();
+            String sql = "SELECT * FROM Users WHERE account = ?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, account);
+            rs = pstmt.executeQuery();
+            
+            if (rs.next()) {
+                user = new Users();
+                user.setAccount(rs.getString("account"));
+                user.setName(rs.getString("name"));
+                user.setRole(rs.getString("role"));
+                user.setStatus(rs.getString("status"));
+                // ⚠️ 注意：这里读取了信用分和冻结时间，请确保你的 Users 实体类里有这两个属性的 Getter/Setter
+                user.setCredit(rs.getInt("credit"));
+                user.setFreezeEndTime(rs.getTimestamp("freeze_end_time"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
+        return user; 
+    }
+
+    // 🌟 新增方法：阶梯式违规惩罚逻辑
+    @Override
+    public void punishUserForViolation(String account) {
+        Connection conn = null;
+        PreparedStatement pstmtSelect = null;
+        PreparedStatement pstmtUpdate = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            
+            // 1. 查出该用户历史总共违规了几次（从 seat_record 账本表查）
+            String sqlCount = "SELECT COUNT(*) as v_count FROM seat_record WHERE account = ? AND action_type LIKE 'violation%'";
+            pstmtSelect = conn.prepareStatement(sqlCount);
+            pstmtSelect.setString(1, account);
+            rs = pstmtSelect.executeQuery();
+            
+            int violationCount = 0;
+            if (rs.next()) {
+                violationCount = rs.getInt("v_count");
+            }
+            
+            // 2. 根据违规次数，制定惩罚套餐
+            int deductPoints = 5; // 默认扣5分
+            int freezeDays = 0;   // 默认不冻结
+            
+            if (violationCount == 2) {
+                deductPoints = 10;
+                freezeDays = 1; // 违规2次，冻结1天
+            } else if (violationCount >= 3) {
+                deductPoints = 20;
+                freezeDays = 3; // 违规3次及以上，冻结3天
+            }
+            
+            // 3. 执行惩罚 (写入 Users 表)
+            String updateSql;
+            if (freezeDays > 0) {
+                // 冻结账号：状态改为 'frozen'
+                updateSql = "UPDATE Users SET credit = credit - ?, status = 'frozen', freeze_end_time = DATE_ADD(NOW(), INTERVAL ? DAY) WHERE account = ?";
+                pstmtUpdate = conn.prepareStatement(updateSql);
+                pstmtUpdate.setInt(1, deductPoints);
+                pstmtUpdate.setInt(2, freezeDays);
+                pstmtUpdate.setString(3, account);
+            } else {
+                // 仅扣分，不冻结
+                updateSql = "UPDATE Users SET credit = credit - ? WHERE account = ?";
+                pstmtUpdate = conn.prepareStatement(updateSql);
+                pstmtUpdate.setInt(1, deductPoints);
+                pstmtUpdate.setString(2, account);
+            }
+            
+            pstmtUpdate.executeUpdate();
+            System.out.println("[系统惩罚] 用户 " + account + " 第 " + violationCount + " 次违规，扣除 " + deductPoints + " 分，冻结 " + freezeDays + " 天。");
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmtSelect, rs);
+            if (pstmtUpdate != null) {
+                try { pstmtUpdate.close(); } catch (SQLException e) { e.printStackTrace(); }
+            }
+        }
+    }
+ // 🌟 新增方法：仅用于更新密码
+    @Override
+    public boolean updatePassword(String account, String newPassword) {
+        boolean isSuccess = false;
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        try {
+            conn = DBUtil.getConnection();
+            String sql = "UPDATE Users SET password = ? WHERE account = ?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, newPassword);
+            pstmt.setString(2, account);
+
+            if (pstmt.executeUpdate() > 0) {
+                isSuccess = true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, null);
+        }
+        return isSuccess;
     }
 }
-//测试代码：直接运行这个 main 方法
-//public static void main(String[] args) {
-//    UsersDao dao = new UserDaoImpl();
-//    
-//    // 尝试用我们在 MySQL 里插入的测试账号查询
-//    Users user = dao.getUserByAccountAndPassword("2024001", "111111");
-//    
-//    if (user != null) {
-//        System.out.println("数据库连接成功！查到的用户是：" + user.getName() + "，身份是：" + user.getRole());
-//    } else {
-//        System.out.println("查询失败，账号密码错误或数据库连接有问题！");
-//    }
-//}
-//}

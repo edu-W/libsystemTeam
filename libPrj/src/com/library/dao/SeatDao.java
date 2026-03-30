@@ -48,4 +48,25 @@ public interface SeatDao {
      */
     List<Map<String, String>> getUserHistory(String account, String type);
     int getUsedSecondsByAccount(String account);
+    /**
+     * 执行预约操作，不仅绑定学号和状态，还要记录当前时间为 book_time
+     */
+    boolean bookSeatWithTime(String seatId, String userAccount);
+    /**
+     * 签到入座操作，将状态改为 used，清空 book_time，并记录 check_in_time
+     */
+    boolean checkInSeat(String seatId, String userAccount);
+    /**
+     * 暂离座位：状态改为 temporary，记录 leave_time
+     */
+    boolean leaveSeat(String seatId, String userAccount);
+
+    /**
+     * 扫码回归：状态恢复为 used，清空 leave_time
+     */
+    boolean returnSeat(String seatId, String userAccount);
+    /**
+     * 后台定时任务：自动释放预约超时和暂离超时的座位，并记录违约
+     */
+    void autoReleaseTimeoutSeats();
 }

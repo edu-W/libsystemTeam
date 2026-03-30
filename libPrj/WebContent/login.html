@@ -311,12 +311,12 @@
 
             <div class="input-group">
                 <i class="fas fa-id-card"></i>
-                <input type="text" id="accountInput" placeholder="统一认证码" value="" autocomplete="off">
+                <input type="text" id="accountInput" placeholder="学号" value="" autocomplete="off">
             </div>
 
             <div class="input-group">
                 <i class="fas fa-lock"></i>
-                <input type="password" id="passwordInput" placeholder="初始密码为身份证后六位" value="">
+                <input type="password" id="passwordInput" placeholder="初始密码为123456" value="">
             </div>
 
             <div class="options">
@@ -384,34 +384,31 @@ function validateForm(account, password) {
     return true;
 }
 
-// 4. 发送真实请求到 Java 后端 (核心修改区)
+//4. 发送真实请求到 Java 后端 (核心修改区)
 async function loginToBackend(account, password) {
     try {
-        // ⚠️ 注意：这里的 "你的项目名" 一定要换成你在 Eclipse 里的项目名（比如 library）
         const response = await fetch('http://localhost:8080/libPrj/api/login', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-                account: account, 
-                password: password,
-                role: selectedRole 
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ account: account, password: password, role: selectedRole })
         });
 
-        // 解析后端传回来的 JSON
         const result = await response.json();
 
         if (result.code === 200) { 
             const user = result.data;
-            // 登录成功，保存信息到浏览器缓存
             localStorage.setItem(APP_CONFIG.STORAGE_KEY_TOKEN, user.token);
             localStorage.setItem(APP_CONFIG.STORAGE_KEY_ROLE, user.role);
             localStorage.setItem(APP_CONFIG.STORAGE_KEY_NAME, user.name);
             localStorage.setItem(APP_CONFIG.STORAGE_KEY_ACCOUNT, account);
             
-            // 记住密码功能
+            // 🌟 核心拦截：如果密码是初始密码 123456，存入强制修改标记！
+            if (password === '123456') {
+                localStorage.setItem('force_change_pwd', 'true');
+            } else {
+                localStorage.removeItem('force_change_pwd');
+            }
+            
             if (document.getElementById('rememberPwd').checked) {
                 localStorage.setItem('saved_pwd_' + account, password);
             } else {
@@ -421,7 +418,6 @@ async function loginToBackend(account, password) {
             alert(`登录成功！欢迎你，${user.name}`);
             setTimeout(() => redirectAfterLogin(), 800);
         } else {
-            // 后端校验失败（如密码错误）
             showError(result.message);
         }
     } catch (error) {
@@ -429,7 +425,6 @@ async function loginToBackend(account, password) {
         showError("网络请求失败，请检查 Tomcat 是否启动以及项目名是否写对");
     }
 }
-
 // 5. 登录成功后的页面跳转逻辑
 function redirectAfterLogin() {
     const role = localStorage.getItem(APP_CONFIG.STORAGE_KEY_ROLE);
