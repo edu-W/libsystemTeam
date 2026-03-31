@@ -398,31 +398,31 @@
 
             // 优化：登录成功后存储完整用户信息
             async function loginToBackend(account, password) {
-            	 try {
-            	        const response = await fetch('http://localhost:8080/libPrj/api/login', {
-            	            method: 'POST',
-            	            headers: { 'Content-Type': 'application/json' },
-            	            body: JSON.stringify({ account, password, role: selectedRole })
-            	        });
-            	        const result = await response.json();
-            	        if (result.code === 200) {
-            	            // 保存 token、角色等信息，并跳转
-            	            localStorage.setItem(APP_CONFIG.STORAGE_KEY_TOKEN, result.data.token);
-            	            localStorage.setItem(APP_CONFIG.STORAGE_KEY_ROLE, result.data.role);
-            	            localStorage.setItem(APP_CONFIG.STORAGE_KEY_ACCOUNT, account);
-            	            localStorage.setItem(APP_CONFIG.STORAGE_KEY_NAME, result.data.name);
-            	            redirectAfterLogin();
-            	        } else {
-            	            showError(result.message);
-            	        }
-            	    } catch (error) {
-            	        showError('网络错误，请检查后端服务是否启动');
-            	    }
-                // 记住密码功能
-                if (document.getElementById('rememberPwd').checked) {
-                    localStorage.setItem('saved_pwd_' + account, password);
-                } else {
-                    localStorage.removeItem('saved_pwd_' + account);
+            	try {
+                    const response = await fetch('http://localhost:8080/libPrj/api/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ account, password, role: selectedRole })
+                    });
+                    const result = await response.json();
+                    if (result.code === 200) {
+                        // 记住密码功能
+                        if (document.getElementById('rememberPwd').checked) {
+                            localStorage.setItem('saved_pwd_' + account, password);
+                        } else {
+                            localStorage.removeItem('saved_pwd_' + account);
+                        }
+                        // 保存 token、角色等信息，并跳转
+                        localStorage.setItem(APP_CONFIG.STORAGE_KEY_TOKEN, result.data.token);
+                        localStorage.setItem(APP_CONFIG.STORAGE_KEY_ROLE, result.data.role);
+                        localStorage.setItem(APP_CONFIG.STORAGE_KEY_ACCOUNT, account);
+                        localStorage.setItem(APP_CONFIG.STORAGE_KEY_NAME, result.data.name);
+                        redirectAfterLogin();
+                    } else {
+                        showError(result.message);
+                    }
+                } catch (error) {
+                    showError('网络错误，请检查后端服务是否启动');
                 }
 
                 alert(`登录成功！将跳转到${user.role === 'student' ? '座位地图' : '管理员后台'}...`);

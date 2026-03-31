@@ -1,2 +1,13 @@
 eclipse.preferences.version=1
+encoding//src/com/library/controller/BookSeatServlet.java=UTF-8
+encoding//src/com/library/controller/CancelSeatServlet.java=UTF-8
+encoding//src/com/library/controller/CheckInServlet.java=UTF-8
+encoding//src/com/library/controller/HandleReportServlet.java=UTF-8
 encoding//src/com/library/controller/LoginServlet.java=UTF-8
+encoding//src/com/library/controller/MySeatServlet.java=UTF-8
+encoding//src/com/library/controller/SeatActionServlet.java=UTF-8
+encoding//src/com/library/controller/SeatListServlet.java=UTF-8
+encoding//src/com/library/controller/SetSeatFaultServlet.java=UTF-8
+encoding//src/com/library/controller/UpdatePasswordServlet.java=UTF-8
+encoding//src/com/library/dao=UTF-8
+encoding//src/com/library/dao/ReportDao.java=UTF-8
