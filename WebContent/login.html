@@ -425,8 +425,6 @@
                     showError('网络错误，请检查后端服务是否启动');
                 }
 
-                alert(`登录成功！将跳转到${user.role === 'student' ? '座位地图' : '管理员后台'}...`);
-                setTimeout(() => redirectAfterLogin(), 800);
             }
 
             function redirectAfterLogin() {

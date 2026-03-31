@@ -87,7 +87,7 @@ public class BookSeatServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             resultMap.put("code", 500);
-            resultMap.put("message", "服务器解析异常");
+            resultMap.put("message", "服务器异常：" + e.getMessage());
         }
 
         out.print(new Gson().toJson(resultMap));

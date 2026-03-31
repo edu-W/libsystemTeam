@@ -57,7 +57,7 @@ public class SeatDaoImpl implements SeatDao {
 
         try {
             conn = DBUtil.getConnection();
-            String sql = "SELECT * FROM lib_seat"; 
+            String sql = "SELECT s.seat_id, s.floor, s.area, s.status, s.user_account, u.name AS user_name FROM lib_seat s LEFT JOIN users u ON s.user_account = u.account";
             pstmt = conn.prepareStatement(sql);
             rs = pstmt.executeQuery();
 
@@ -66,7 +66,9 @@ public class SeatDaoImpl implements SeatDao {
                 seat.setSeatId(rs.getString("seat_id"));
                 seat.setFloor(rs.getString("floor")); // 统一用小写防止报错
                 seat.setArea(rs.getString("area"));
-                seat.setStatus(rs.getString("status")); 
+                seat.setStatus(rs.getString("status"));
+                seat.setUserAccount(rs.getString("user_account"));
+                seat.setUserName(rs.getString("user_name"));
                 list.add(seat);
             }
         } catch (Exception e) {
@@ -198,8 +200,8 @@ public class SeatDaoImpl implements SeatDao {
                 // 1. 如果是首次扫码签到，把状态改为使用中，并用 NOW() 记录精确时间
                 sql = "UPDATE lib_seat SET status = ?, user_account = ?, check_in_time = NOW() WHERE seat_id = ?";
             } else if (userAccount == null || userAccount.trim().isEmpty()) {
-                // 2. 如果是退座(传进来了空值)，不仅要清空账号，还要把时间也设为 NULL 清空
-                sql = "UPDATE lib_seat SET status = ?, user_account = ?, check_in_time = NULL WHERE seat_id = ?";
+                // 2. 如果是退座(传进来了空值)：记录离开时间，并清空所有占用字段
+            	sql = "UPDATE lib_seat SET status = ?, user_account = ?, book_time = NULL, leave_time = NOW(), check_in_time = NULL WHERE seat_id = ?";
             } else {
                 // 3. 只是暂离、恢复或单纯预约，千万别动 check_in_time
                 sql = "UPDATE lib_seat SET status = ?, user_account = ? WHERE seat_id = ?";
@@ -337,6 +339,7 @@ public class SeatDaoImpl implements SeatDao {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            throw new RuntimeException(e.getMessage(), e);
         } finally {
             DBUtil.close(conn, pstmt, null);
         }

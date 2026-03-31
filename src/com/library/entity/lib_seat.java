@@ -2,16 +2,15 @@ package com.library.entity;
 import java.sql.Timestamp;
 
 public class lib_seat {
-	// 1. 属性定义（与数据库 lib_seat 表字段对应）
-    private String seatId;       // 对应 seat_id，如 A-203
-    private String floor;        // 对应 floor，如 1F
-    private String area;         // 对应 area，如 A区
-    private String status;       // 对应 status，如 free, booked, used 等
-    private String userAccount;  // 对应 user_account，当前占用/预约人的学号
+    private String seatId;       
+    private String floor;        
+    private String area;         
+    private String status;       
+    private String userAccount;  
     private Timestamp bookTime;
     private Timestamp leaveTime;
 
-    //private Date updateTime;     // 对应 update_time，状态最后更新时间
+    private String updateTime;     
 
     // 2. 无参构造函数（框架在反射创建对象时往往需要用到）
     public  lib_seat () {
@@ -72,15 +71,14 @@ public class lib_seat {
     public void setLeaveTime(Timestamp leaveTime) {
         this.leaveTime = leaveTime;
     }
-//    public Date getUpdateTime() {
-//        return updateTime;
-//    }
-//
-//    public void setUpdateTime(Date updateTime) {
-//        this.updateTime = updateTime;
-//    }
-    
-    // 可选：重写 toString() 方法，方便在控制台打印测试数据时查看座位详情
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
     @Override
     public String toString() {
         return "lib_seat{" +
