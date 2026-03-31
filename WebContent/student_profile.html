@@ -158,6 +158,23 @@
             </div>
             <div id="consoleActionBtns" style="display: flex; gap: 12px; margin-top: 20px;"></div>
         </div>
+         <div id="hasSeatState" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div>
+                    <div style="font-size: 0.85rem; color: #666; font-weight: 600;"><i class="fas fa-star" style="color:#faad14;"></i> 我的专属座位</div>
+                    <div id="consoleSeatId" style="font-size: 2.2rem; font-weight: 900; color: #0b3b5c; margin-top: 2px; letter-spacing: 1px;">加载中</div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
+                    <div id="consoleSeatStatus" style="padding: 6px 14px; background: #e6f7ff; color: #1890ff; border-radius: 20px; font-weight: bold; font-size: 0.85rem; border: 1px solid #91d5ff;">状态加载中</div>
+                    
+                    <button onclick="window.location.href='seat-map.html'" style="background: transparent; border: 1px solid #1890ff; color: #1890ff; border-radius: 20px; padding: 4px 10px; font-size: 0.75rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(24,144,255,0.1); transition: all 0.2s;">
+                        <i class="fas fa-map-marked-alt"></i> 全馆地图 
+                    </button>
+
+                </div>
+            </div>
+            <div id="consoleActionBtns" style="display: flex; gap: 12px; margin-top: 20px;"></div>
+        </div>
     </div>
 
     <div class="card">
@@ -171,10 +188,10 @@
                 <i class="fas fa-bell icon"></i>
                 <div class="icon-text">系统通知</div>
             </div>
-            <div class="icon-item">
-                <i class="fas fa-cog icon"></i>
-                <div class="icon-text">常用设置</div>
-            </div>
+            <a href="seat-map.html" class="icon-item" style="text-decoration: none;">
+                <i class="fas fa-map-marked-alt icon" style="color: #0b3b5c;"></i>
+                <div class="icon-text">全馆地图</div>
+            </a>
             <div class="icon-item">
                 <i class="fas fa-id-card icon"></i>
                 <div class="icon-text">个人资料</div>
@@ -431,16 +448,26 @@
         }, 800);
     }
 
+ // 6. 六宫格弹窗功能
     document.querySelectorAll('.icon-item').forEach(item => {
-        item.addEventListener('click', function() {
+        item.addEventListener('click', function(event) {
             const text = this.querySelector('.icon-text').textContent.trim();
+            
+            // 🌟 新增：给“全馆地图”开绿灯，直接 return 放行，让 <a> 标签的 href 自行跳转！
+            if (text === '全馆地图') {
+                return; 
+            }
+            
             if (text === '退出登录') {
+                // 阻止 a 标签的默认行为（如果有的话）
+                event.preventDefault(); 
                 if (confirm('确定要退出账号吗？')) {
                     localStorage.clear();
                     window.location.href = 'login.html';
                 }
             } else {
-                openModal(text);
+                event.preventDefault(); 
+                openModal(text); // 其他图标正常弹窗
             }
         });
     });
@@ -503,33 +530,7 @@
                     <input type="password" id="confirmPassword" placeholder="请再次确认新密码" style="width: 100%; padding: 8px 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; outline: none;">
                     <button onclick="submitPasswordUpdate()" style="width: 100%; padding: 10px; background: #0b3b5c; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(11,59,92,0.2);">确认修改</button>
                 </div>`;
-        }else if (title === '常用设置') {
-            body.innerHTML = `
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <div onclick="window.location.href='seat-map.html'" style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: #f0f7ff; border-radius: 10px; cursor: pointer; border: 1px solid #d4e8ff; transition: background 0.2s;" onmouseover="this.style.background='#deeeff'" onmouseout="this.style.background='#f0f7ff'">
-                        <i class="fas fa-map-marked-alt" style="font-size: 1.4rem; color: #1890ff; width: 24px;"></i>
-                        <div>
-                            <div style="font-weight: 600; color: #0b3b5c; font-size: 0.95rem;">查看座位地图</div>
-                            <div style="font-size: 0.8rem; color: #888; margin-top: 2px;">浏览实时座位状态，快速选座</div>
-                        </div>
-                        <i class="fas fa-chevron-right" style="margin-left: auto; color: #bbb;"></i>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: #f9f9f9; border-radius: 10px; cursor: default; border: 1px solid #eee; opacity: 0.7;">
-                        <i class="fas fa-bell" style="font-size: 1.4rem; color: #888; width: 24px;"></i>
-                        <div>
-                            <div style="font-weight: 600; color: #555; font-size: 0.95rem;">通知设置</div>
-                            <div style="font-size: 0.8rem; color: #aaa; margin-top: 2px;">功能开发中...</div>
-                        </div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: #f9f9f9; border-radius: 10px; cursor: default; border: 1px solid #eee; opacity: 0.7;">
-                        <i class="fas fa-moon" style="font-size: 1.4rem; color: #888; width: 24px;"></i>
-                        <div>
-                            <div style="font-weight: 600; color: #555; font-size: 0.95rem;">深色模式</div>
-                            <div style="font-size: 0.8rem; color: #aaa; margin-top: 2px;">功能开发中...</div>
-                        </div>
-                    </div>
-                </div>`;
-        } else if (title === '帮助中心') {
+        }else if (title === '帮助中心') {
             body.innerHTML = `
                 <p style="margin-bottom: 10px;"><strong>Q：如何释放座位？</strong><br>A：在地图上点击自己的座位即可退座。</p>
                 <p style="margin-bottom: 10px;"><strong>Q：暂离怎么算？</strong><br>A：暂离限时30分钟，超时系统将自动判定为违约并释放座位。</p>`;
@@ -551,8 +552,7 @@
                 });
             });
             loadHistoryDataToModal('预约历史'); 
-        } else {
-            body.innerHTML = `<div style="text-align:center; padding: 20px; color:#999;"><i class="fas fa-tools" style="font-size: 2.5rem; margin-bottom: 15px; color: #d0d7de;"></i><br><strong>模块开发中...</strong></div>`;
+        } 
         }
         universalModal.style.display = 'flex';
     }

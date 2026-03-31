@@ -345,180 +345,111 @@
             <span id="errorMsg"></span>
         </div>
 
-        <script>
-            // 修复：移除APP_CONFIG里的多余空格
-            const APP_CONFIG = {
-                API_BASE_URL: 'http://localhost:8080/library/api',
-                STORAGE_KEY_TOKEN: 'lib_token',
-                STORAGE_KEY_ROLE: 'lib_role',
-                STORAGE_KEY_USER_ID: 'lib_user_id',
-                STORAGE_KEY_ACCOUNT: 'lib_account',
-                STORAGE_KEY_NAME: 'lib_name'
-            };
+               const result = await response.json();
 
-            let selectedRole = null;
-
-            function showError(message) {
-                const errorToast = document.getElementById('errorToast');
-                const errorMsg = document.getElementById('errorMsg');
-                errorMsg.textContent = message;
-                errorToast.style.display = 'block';
-                setTimeout(() => {
-                    errorToast.style.display = 'none';
-                }, 3000);
+        if (result.code === 200) { 
+            const user = result.data;
+            localStorage.setItem(APP_CONFIG.STORAGE_KEY_TOKEN, user.token);
+            localStorage.setItem(APP_CONFIG.STORAGE_KEY_ROLE, user.role);
+            localStorage.setItem(APP_CONFIG.STORAGE_KEY_NAME, user.name);
+            localStorage.setItem(APP_CONFIG.STORAGE_KEY_ACCOUNT, account);
+            
+            // 🌟 核心拦截：如果密码是初始密码 123456，存入强制修改标记！
+            if (password === '123456') {
+                localStorage.setItem('force_change_pwd', 'true');
+            } else {
+                localStorage.removeItem('force_change_pwd');
+            }
+            
+            if (document.getElementById('rememberPwd').checked) {
+                localStorage.setItem('saved_pwd_' + account, password);
+            } else {
+                localStorage.removeItem('saved_pwd_' + account);
             }
 
-            function md5Hash(str) {
-                return CryptoJS.MD5(str).toString();
-            }
+            alert(`登录成功！欢迎你，${user.name}`);
+            setTimeout(() => redirectAfterLogin(), 800);
+        } else {
+            showError(result.message);
+        }
+    } catch (error) {
+        console.error(error);
+        showError("网络请求失败，请检查 Tomcat 是否启动以及项目名是否写对");
+    }
+}
+// 5. 登录成功后的页面跳转逻辑
+function redirectAfterLogin() {
+    const role = localStorage.getItem(APP_CONFIG.STORAGE_KEY_ROLE);
+    if (role === 'student') {
+    	window.location.href = 'student_profile.html'; // 确保这个文件在你项目的 WebContent 目录下
+    } else if (role === 'admin') {
+        window.location.href = 'admin-dashboard.html';
+    } else {
+        showError('未知用户角色');
+    }
+}
 
-            function validateForm(account, password) {
-                if (!account || !account.trim()) {
-                    showError('请输入学号');
-                    return false;
-                }
-                if (account.length < 10) {
-                    showError('学号长度不符合');
-                    return false;
-                }
-                if (!password || !password.trim()) {
-                    showError('请输入密码');
-                    return false;
-                }
-                if (password.length < 6) {
-                    showError('密码至少6位');
-                    return false;
-                }
-                if (!selectedRole) {
-                    showError('请先选择身份（学生/管理员）');
-                    return false;
-                }
-                return true;
-            }
+// 6. 身份选择按钮特效交互
+document.querySelectorAll('.role-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        selectedRole = this.dataset.role;
+        document.querySelectorAll('.role-btn').forEach(b => {
+            b.style.background = '#e9f0f7';
+            b.style.color = '#5e7c9c';
+            b.style.opacity = '0.6';
+            b.style.fontWeight = '500';
+            b.style.boxShadow = 'none';
+        });
+        this.style.background = '#0b3b5c';
+        this.style.color = '#FFD966';
+        this.style.opacity = '1';
+        this.style.fontWeight = '600';
+        this.style.boxShadow = '0 4px 12px rgba(11, 59, 92, 0.2)';
+    });
 
-            // 优化：登录成功后存储完整用户信息
-            async function loginToBackend(account, password) {
-            	try {
-                    const response = await fetch('http://localhost:8080/library/api/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ account, password, role: selectedRole })
-                    });
-                    const result = await response.json();
-                    if (result.code === 200) {
-                        // 记住密码功能
-                        if (document.getElementById('rememberPwd').checked) {
-                            localStorage.setItem('saved_pwd_' + account, password);
-                        } else {
-                            localStorage.removeItem('saved_pwd_' + account);
-                        }
-                        // 保存 token、角色等信息，并跳转
-                        localStorage.setItem(APP_CONFIG.STORAGE_KEY_TOKEN, result.data.token);
-                        localStorage.setItem(APP_CONFIG.STORAGE_KEY_ROLE, result.data.role);
-                        localStorage.setItem(APP_CONFIG.STORAGE_KEY_ACCOUNT, account);
-                        localStorage.setItem(APP_CONFIG.STORAGE_KEY_NAME, result.data.name);
-                        redirectAfterLogin();
-                    } else {
-                        showError(result.message);
-                    }
-                } catch (error) {
-                    showError('网络错误，请检查后端服务是否启动');
-                }
+    btn.addEventListener('mouseover', function () {
+        if (selectedRole !== this.dataset.role) {
+            this.style.opacity = '0.8';
+            this.style.transform = 'scale(1.08)';
+        }
+    });
 
-            }
+    btn.addEventListener('mouseout', function () {
+        if (selectedRole !== this.dataset.role) {
+            this.style.opacity = '0.6';
+            this.style.transform = 'scale(1)';
+        }
+    });
+});
 
-            function redirectAfterLogin() {
-                const role = localStorage.getItem(APP_CONFIG.STORAGE_KEY_ROLE);
-                if (role === 'student') {
-                    window.location.href = 'seat-map.html';
-                } else if (role === 'admin') {
-                    window.location.href = 'admin-dashboard.html';
-                } else {
-                    showError('未知用户角色');
-                }
-            }
+// 7. 绑定登录按钮和回车键
+document.querySelector('.login-btn').addEventListener('click', function () {
+    const account = document.getElementById('accountInput').value.trim();
+    const password = document.getElementById('passwordInput').value.trim();
+    if (validateForm(account, password)) {
+        loginToBackend(account, password);
+    }
+});
 
-            // 优化角色选择交互
-            document.querySelectorAll('.role-btn').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    selectedRole = this.dataset.role;
-                    document.querySelectorAll('.role-btn').forEach(b => {
-                        b.style.background = '#e9f0f7';
-                        b.style.color = '#5e7c9c';
-                        b.style.opacity = '0.6';
-                        b.style.fontWeight = '500';
-                        b.style.boxShadow = 'none';
-                    });
-                    this.style.background = '#0b3b5c';
-                    this.style.color = '#FFD966';
-                    this.style.opacity = '1';
-                    this.style.fontWeight = '600';
-                    this.style.boxShadow = '0 4px 12px rgba(11, 59, 92, 0.2)';
-                });
+document.getElementById('passwordInput').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        document.querySelector('.login-btn').click();
+    }
+});
 
-                btn.addEventListener('mouseover', function () {
-                    if (selectedRole !== this.dataset.role) {
-                        this.style.opacity = '0.8';
-                        this.style.transform = 'scale(1.08)';
-                    }
-                });
-
-                btn.addEventListener('mouseout', function () {
-                    if (selectedRole !== this.dataset.role) {
-                        this.style.opacity = '0.6';
-                        this.style.transform = 'scale(1)';
-                    }
-                });
-            });
-
-            // 登录按钮点击事件
-            document.querySelector('.login-btn').addEventListener('click', function () {
-                const account = document.getElementById('accountInput').value.trim();
-                const password = document.getElementById('passwordInput').value.trim();
-                if (validateForm(account, password)) {
-                    loginToBackend(account, password);
-                }
-            });
-
-            // 回车登录
-            document.getElementById('passwordInput').addEventListener('keypress', function (e) {
-                if (e.key === 'Enter') {
-                    document.querySelector('.login-btn').click();
-                }
-            });
-
-            // 页面加载：自动填充记住的账号密码
-            window.addEventListener('load', function () {
-                const savedAccount = localStorage.getItem(APP_CONFIG.STORAGE_KEY_ACCOUNT);
-                if (savedAccount) {
-                    document.getElementById('accountInput').value = savedAccount;
-                    const savedPwd = localStorage.getItem('saved_pwd_' + savedAccount);
-                    if (savedPwd) {
-                        document.getElementById('passwordInput').value = savedPwd;
-                        document.getElementById('rememberPwd').checked = true;
-                    }
-                }
-
-                // 已登录状态检测
-                const token = localStorage.getItem(APP_CONFIG.STORAGE_KEY_TOKEN);
-                const role = localStorage.getItem(APP_CONFIG.STORAGE_KEY_ROLE);
-                if (token && role) {
-                    if (confirm('检测到已登录状态，是否直接跳转？')) {
-                        redirectAfterLogin();
-                    }
-                }
-            });
-
-            // 动画样式
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes slideIn {
-                    from { transform: translateX(400px); opacity: 0; }
-                    to { transform: translateX(0); opacity: 1; }
-                }
-            `;
-            document.head.appendChild(style);
-        </script>
+// 8. 页面加载完毕后自动填充历史账号
+window.addEventListener('load', function () {
+    const savedAccount = localStorage.getItem(APP_CONFIG.STORAGE_KEY_ACCOUNT);
+    if (savedAccount) {
+        document.getElementById('accountInput').value = savedAccount;
+        const savedPwd = localStorage.getItem('saved_pwd_' + savedAccount);
+        if (savedPwd) {
+            document.getElementById('passwordInput').value = savedPwd;
+            document.getElementById('rememberPwd').checked = true;
+        }
+    }
+});
+</script>
 
         <div class="internal-footer">
             V1.0.0 · 重邮图书馆 · 2026<br />
