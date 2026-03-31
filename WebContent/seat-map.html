@@ -196,7 +196,7 @@
                     const seatX = isLeft ? (tableX - tableWidth/2 - seatSize - seatGap) : (tableX + tableWidth/2 + seatGap);
                     const seatY = tableY + (tableHeight / 4) * (rowIndex + 1) - seatSize/2;
 
-                    const seatId = `${selection.floor}F-${selection.area}-${String(globalSeatIndex).padStart(3, '0')}`;
+                    const seatId = `${selection.floor}-${selection.area}-${String(globalSeatIndex).padStart(3, '0')}`;
                     const dbSeat = realSeatData[seatId];
                     
                     let status = 'free', userAccount = '';
