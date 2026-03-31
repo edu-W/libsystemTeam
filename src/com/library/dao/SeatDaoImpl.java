@@ -23,7 +23,9 @@ public class SeatDaoImpl implements SeatDao {
 
         try {
             conn = DBUtil.getConnection();
-            String sql = "SELECT * FROM lib_seat WHERE floor = ? AND area = ?";
+            String sql = "SELECT s.seat_id, s.floor, s.area, s.status, s.user_account, s.leave_time, u.name AS user_name"
+                       + " FROM lib_seat s LEFT JOIN users u ON s.user_account = u.account"
+                       + " WHERE s.floor = ? AND s.area = ?";
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, floor);
             pstmt.setString(2, area);
@@ -37,6 +39,7 @@ public class SeatDaoImpl implements SeatDao {
                 seat.setArea(rs.getString("area"));
                 seat.setStatus(rs.getString("status"));
                 seat.setUserAccount(rs.getString("user_account"));
+                seat.setUserName(rs.getString("user_name"));
                 seat.setLeaveTime(rs.getTimestamp("leave_time"));
                 seatList.add(seat);
             }
