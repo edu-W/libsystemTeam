@@ -11,3 +11,4 @@ encoding//src/com/library/controller/SetSeatFaultServlet.java=UTF-8
 encoding//src/com/library/controller/UpdatePasswordServlet.java=UTF-8
 encoding//src/com/library/dao=UTF-8
 encoding//src/com/library/dao/ReportDao.java=UTF-8
+encoding//src/com/library/listener/AutoReleaseListener.java=UTF-8

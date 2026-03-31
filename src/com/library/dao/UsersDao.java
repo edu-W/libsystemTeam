@@ -10,6 +10,8 @@ public interface UsersDao {
     // 获取所有学生
     List<Users> getAllStudents();
     
+    List<Users> getAdmin();
+    
     // 解冻账号
     boolean unfreezeUser(String account);
     
@@ -21,4 +23,6 @@ public interface UsersDao {
 
     // 🌟 核心修复：必须在这里声明修改密码的方法！
     boolean updatePassword(String account, String newPassword);
+ // 🌟 新增：更新用户（管理员）的基本信息
+    boolean updateAdminProfile(String account, String phone, String email);
 }

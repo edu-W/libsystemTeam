@@ -11,6 +11,8 @@ public class Users {
     private int credit;
     private String status;
     private java.sql.Timestamp freezeEndTime;
+    private String phone;
+    private String email;
 //    private Date createTime;
 
     // 2. 无参构造函数（必须有）
@@ -68,7 +70,20 @@ public class Users {
     
     public java.sql.Timestamp getFreezeEndTime() { return freezeEndTime; }
     public void setFreezeEndTime(java.sql.Timestamp freezeEndTime) { this.freezeEndTime = freezeEndTime; }
-//    public Date getCreateTime() {
+    public String getPhone() {
+        return phone;
+    }
+    public String getEmail() {
+        return email;
+    }
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+    public void setEmail(String email) {
+        this.email = email;
+    }
+    
+    //    public Date getCreateTime() {
 //        return createTime;
 //    }
 //
