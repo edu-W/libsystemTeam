@@ -684,8 +684,10 @@
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ account: account })
                 });
-                if ((await response.json()).code === 200) { alert('解封成功！'); loadAllUsers(); }
-            } catch (error) {}
+                const result = await response.json();
+                if (result.code === 200) { alert('解封成功！'); loadAllUsers(); }
+                else { alert('解封失败，请稍后重试！'); }
+            } catch (error) { alert('解封失败，请稍后重试！'); }
         }
     </script>
 </body>
