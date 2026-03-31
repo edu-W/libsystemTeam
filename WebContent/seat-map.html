@@ -150,7 +150,7 @@
         
         let realSeatData = {}; 
         try {
-            const response = await fetch("http://localhost:8080/libPrj/api/seats?floor=" + selection.floor + "&area=" + selection.area);
+            const response = await fetch("http://localhost:8080/library/api/seats?floor=" + selection.floor + "&area=" + selection.area);
             const result = await response.json();
             if (result.code === 200) {
                 result.data.forEach(seat => { realSeatData[seat.seatId] = seat; });
@@ -272,7 +272,7 @@
             if (seatStatus === 'free') {
                 if (confirm(`确认预约空闲座位 ${seatId} 吗？`)) {
                     try {
-                        const res = await fetch('http://localhost:8080/libPrj/api/bookSeat', {
+                        const res = await fetch('http://localhost:8080/library/api/bookSeat', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ seatId: seatId, userAccount: myAccount })
@@ -319,7 +319,7 @@
                 // 通用的座位操作请求
                 async function sendSeatAction(apiPath) {
                     try {
-                        const res = await fetch(`http://localhost:8080/libPrj/api/${apiPath}`, {
+                        const res = await fetch(`http://localhost:8080/library/api/${apiPath}`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ seatId: seatId, userAccount: myAccount })
@@ -412,7 +412,7 @@
         if (!currentSuggestedSeatId) return;
         const myAccount = localStorage.getItem('lib_account'); 
         try {
-            const res = await fetch('http://localhost:8080/libPrj/api/bookSeat', {
+            const res = await fetch('http://localhost:8080/library/api/bookSeat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ seatId: currentSuggestedSeatId, userAccount: myAccount })

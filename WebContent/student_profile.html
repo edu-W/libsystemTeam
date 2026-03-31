@@ -256,7 +256,7 @@
     // 1. 获取后端核心数据并渲染
     async function fetchProfileData() {
         try {
-            const response = await fetch("http://localhost:8080/libPrj/api/userProfile?account=" + userId);
+            const response = await fetch("http://localhost:8080/library/api/userProfile?account=" + userId);
             const result = await response.json();
             
             if (result.code === 200) {
@@ -387,7 +387,7 @@
         if (actionName === 'checkIn') apiPath = 'checkIn';
 
         try {
-            const res = await fetch(`http://localhost:8080/libPrj/api/${apiPath}`, {
+            const res = await fetch(`http://localhost:8080/library/api/${apiPath}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ seatId: currentSeatId, userAccount: userId })
@@ -403,7 +403,7 @@
     async function handleCancel() {
         if (!confirm('确定要彻底释放该座位吗？离开后将无法恢复。')) return;
         try {
-            const res = await fetch('http://localhost:8080/libPrj/api/cancelSeat', {
+            const res = await fetch('http://localhost:8080/library/api/cancelSeat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ seatId: currentSeatId })
@@ -451,7 +451,7 @@
         historyContainer.innerHTML = '<div style="text-align:center; padding: 30px; color:#999;"><i class="fas fa-spinner fa-spin"></i> 加载中...</div>';
 
         try {
-            const res = await fetch(`http://localhost:8080/libPrj/api/history?account=${userId}&type=${tabTypeMap[tabName]}`);
+            const res = await fetch(`http://localhost:8080/library/api/history?account=${userId}&type=${tabTypeMap[tabName]}`);
             const result = await res.json();
             historyContainer.innerHTML = ''; 
 
@@ -551,7 +551,7 @@
         }
 
         try {
-            const res = await fetch('http://localhost:8080/libPrj/api/user/updatePassword', {
+            const res = await fetch('http://localhost:8080/library/api/user/updatePassword', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
