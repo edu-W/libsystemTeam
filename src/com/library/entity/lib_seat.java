@@ -9,6 +9,7 @@ public class lib_seat {
     private String userAccount;  
     private Timestamp bookTime;
     private Timestamp leaveTime;
+    private String userName;
 
     private String updateTime;     
 
