@@ -337,6 +337,7 @@ public class SeatDaoImpl implements SeatDao {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            throw new RuntimeException(e.getMessage(), e);
         } finally {
             DBUtil.close(conn, pstmt, null);
         }
