@@ -423,7 +423,8 @@
                             toggleSeatFault(seat.seatId, 'setFault');
                         }
                     } else {
-                        const action = confirm(`【监控干预】\n📍 座位号：${seat.seatId}\n当前状态：${seat.status}\n占用学生：${seat.userAccount || '未知'}\n\n[确定] = 强制释放该座位\n[取消] = 暂不处理`);
+                        const occupantName = seat.userName ? `${seat.userName}（${seat.userAccount}）` : (seat.userAccount || '未知');
+                        const action = confirm(`【监控干预】\n📍 座位号：${seat.seatId}\n当前状态：${seat.status}\n占用学生：${occupantName}\n\n[确定] = 强制释放该座位\n[取消] = 暂不处理`);
                         if (action) forceReleaseSeat(seat.seatId);
                     }
                 };

@@ -209,7 +209,6 @@ CREATE TABLE `users` (
 -- ----------------------------
 -- Records of users
 -- ----------------------------
-INSERT INTO `users` VALUES ('', '123456', '张霄', 'student', 'normal', '100');
 INSERT INTO `users` VALUES ('2023214414', '123456', '彭子恒', 'student', 'normal', '100');
 INSERT INTO `users` VALUES ('2024000001', '123456', '测试学生', 'student', 'normal', '100');
 INSERT INTO `users` VALUES ('2024211056', '123456', '漆诚鹏', 'student', 'normal', '100');
@@ -283,3 +282,75 @@ INSERT INTO `users` VALUES ('lwzy2026001', '123456', '管理员', 'admin', 'norm
 -- ALTER TABLE `lib_seat` ADD COLUMN IF NOT EXISTS `book_time` datetime DEFAULT NULL AFTER `user_account`;
 -- ALTER TABLE `lib_seat` ADD COLUMN IF NOT EXISTS `leave_time` datetime DEFAULT NULL AFTER `book_time`;
 -- ----------------------------
+
+-- ----------------------------
+-- 演示数据：随机分配学生到座位，使地图看起来更真实
+-- 约 35 个座位处于占用/预约/暂离状态（总120个座位，占比约29%）
+-- 时间基准：2026-03-31（可根据实际情况整体替换日期）
+-- ----------------------------
+
+-- ===== 1F 一楼 =====
+-- 1-A 自习区（4 used + 1 booked + 1 temporary）
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214277', `check_in_time`='2026-03-31 08:15:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='1-A-001';
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214279', `check_in_time`='2026-03-31 08:32:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='1-A-002';
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214280', `check_in_time`='2026-03-31 09:04:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='1-A-004';
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214281', `check_in_time`='2026-03-31 09:50:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='1-A-007';
+UPDATE `lib_seat` SET `status`='booked',    `user_account`='2024214282', `check_in_time`=NULL,                  `book_time`='2026-03-31 11:08:00',   `leave_time`=NULL                    WHERE `seat_id`='1-A-003';
+UPDATE `lib_seat` SET `status`='temporary', `user_account`='2024214283', `check_in_time`='2026-03-31 08:48:00', `book_time`=NULL,                    `leave_time`='2026-03-31 10:55:00'   WHERE `seat_id`='1-A-006';
+
+-- 1-B 阅览区（2 used + 1 booked）
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214288', `check_in_time`='2026-03-31 09:17:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='1-B-001';
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214289', `check_in_time`='2026-03-31 09:38:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='1-B-003';
+UPDATE `lib_seat` SET `status`='booked',    `user_account`='2024214290', `check_in_time`=NULL,                  `book_time`='2026-03-31 11:22:00',   `leave_time`=NULL                    WHERE `seat_id`='1-B-005';
+
+-- 1-C 研讨区（2 used + 1 temporary）
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214291', `check_in_time`='2026-03-31 09:45:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='1-C-001';
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214292', `check_in_time`='2026-03-31 10:10:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='1-C-004';
+UPDATE `lib_seat` SET `status`='temporary', `user_account`='2024214293', `check_in_time`='2026-03-31 09:00:00', `book_time`=NULL,                    `leave_time`='2026-03-31 11:05:00'   WHERE `seat_id`='1-C-007';
+
+-- ===== 2F 二楼 =====
+-- 2-A 自习区（4 used + 1 booked）
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214294', `check_in_time`='2026-03-31 08:02:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='2-A-001';
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214295', `check_in_time`='2026-03-31 08:21:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='2-A-002';
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214296', `check_in_time`='2026-03-31 08:44:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='2-A-004';
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214297', `check_in_time`='2026-03-31 09:03:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='2-A-007';
+UPDATE `lib_seat` SET `status`='booked',    `user_account`='2024214299', `check_in_time`=NULL,                  `book_time`='2026-03-31 11:30:00',   `leave_time`=NULL                    WHERE `seat_id`='2-A-005';
+
+-- 2-B 阅览区（2 used）
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214300', `check_in_time`='2026-03-31 09:23:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='2-B-001';
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214301', `check_in_time`='2026-03-31 09:41:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='2-B-004';
+
+-- 2-C 研讨区（2 used + 1 booked）
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214302', `check_in_time`='2026-03-31 10:05:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='2-C-002';
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214303', `check_in_time`='2026-03-31 10:20:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='2-C-005';
+UPDATE `lib_seat` SET `status`='booked',    `user_account`='2024214305', `check_in_time`=NULL,                  `book_time`='2026-03-31 11:15:00',   `leave_time`=NULL                    WHERE `seat_id`='2-C-008';
+
+-- ===== 3F 三楼 =====
+-- 3-A 自习区（3 used + 1 temporary）
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214306', `check_in_time`='2026-03-31 08:11:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='3-A-001';
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214307', `check_in_time`='2026-03-31 08:33:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='3-A-003';
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214308', `check_in_time`='2026-03-31 09:07:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='3-A-005';
+UPDATE `lib_seat` SET `status`='temporary', `user_account`='2024214309', `check_in_time`='2026-03-31 08:52:00', `book_time`=NULL,                    `leave_time`='2026-03-31 10:48:00'   WHERE `seat_id`='3-A-007';
+
+-- 3-B 阅览区（2 used）
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214310', `check_in_time`='2026-03-31 09:12:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='3-B-001';
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214311', `check_in_time`='2026-03-31 09:28:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='3-B-004';
+
+-- 3-C 研讨区（2 used + 1 booked）
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214312', `check_in_time`='2026-03-31 09:37:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='3-C-001';
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214313', `check_in_time`='2026-03-31 10:08:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='3-C-003';
+UPDATE `lib_seat` SET `status`='booked',    `user_account`='2024214315', `check_in_time`=NULL,                  `book_time`='2026-03-31 11:10:00',   `leave_time`=NULL                    WHERE `seat_id`='3-C-006';
+
+-- ===== 4F 四楼 =====
+-- 4-A 自习区（2 used + 1 booked）
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214316', `check_in_time`='2026-03-31 08:07:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='4-A-001';
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214317', `check_in_time`='2026-03-31 08:26:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='4-A-003';
+UPDATE `lib_seat` SET `status`='booked',    `user_account`='2024214318', `check_in_time`=NULL,                  `book_time`='2026-03-31 11:05:00',   `leave_time`=NULL                    WHERE `seat_id`='4-A-006';
+
+-- 4-B 阅览区（2 used）
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214319', `check_in_time`='2026-03-31 08:47:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='4-B-001';
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214320', `check_in_time`='2026-03-31 09:06:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='4-B-003';
+
+-- 4-C 研讨区（2 used）
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214323', `check_in_time`='2026-03-31 09:22:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='4-C-001';
+UPDATE `lib_seat` SET `status`='used',      `user_account`='2024214327', `check_in_time`='2026-03-31 09:48:00', `book_time`=NULL,                    `leave_time`=NULL                    WHERE `seat_id`='4-C-004';
