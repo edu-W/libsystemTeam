@@ -146,8 +146,8 @@
                     <div id="stat-used" style="font-size: 1.8rem; font-weight: bold; color: #ff6b6b;">0</div>
                 </div>
                  <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer;" onclick="filterMonitorByStatus('temporary')" title="点击筛选暂离座位">
-                    <div style="color: #faad14; font-size: 0.9rem;">暂离中</div>
-                    <div id="stat-temp" style="font-size: 1.8rem; font-weight: bold; color: #faad14;">0</div>
+                    <div style="color: #d4a000; font-size: 0.9rem;">暂离中</div>
+                    <div id="stat-temp" style="font-size: 1.8rem; font-weight: bold; color: #d4a000;">0</div>
                 </div>
                 <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer;" onclick="filterMonitorByStatus('booked')" title="点击筛选已预约座位">
                     <div style="color: #1890ff; font-size: 0.9rem;">已预约</div>
@@ -161,8 +161,8 @@
                 <div style="color: #ddd;">|</div>
                 <div style="display: flex; gap: 15px;">
                     <span style="font-size: 0.85rem; color: #666; display: flex; align-items: center;"><span style="display:inline-block; width:14px; height:14px; background:#ff6b6b; border-radius:3px; margin-right:5px;"></span> 使用中</span>
-                    <span style="font-size: 0.85rem; color: #666; display: flex; align-items: center;"><span style="display:inline-block; width:14px; height:14px; background:#faad14; border-radius:3px; margin-right:5px;"></span> 暂离</span>
-                    <span style="font-size: 0.85rem; color: #666; display: flex; align-items: center;"><span style="display:inline-block; width:14px; height:14px; background:#1890ff; border-radius:3px; margin-right:5px;"></span> 已预约</span>
+                    <span style="font-size: 0.85rem; color: #666; display: flex; align-items: center;"><span style="display:inline-block; width:14px; height:14px; background:#ffc107; border-radius:3px; margin-right:5px;"></span> 暂离</span>
+                    <span style="font-size: 0.85rem; color: #666; display: flex; align-items: center;"><span style="display:inline-block; width:14px; height:14px; background:#66ccff; border-radius:3px; margin-right:5px;"></span> 已预约</span>
                     <span style="font-size: 0.85rem; color: #666; display: flex; align-items: center;"><span style="display:inline-block; width:14px; height:14px; background:#a8d8a8; border-radius:3px; margin-right:5px;"></span> 空闲</span>
                     <span style="font-size: 0.85rem; color: #666; display: flex; align-items: center;"><span style="display:inline-block; width:14px; height:14px; background:#cccccc; border-radius:3px; margin-right:5px;"></span> 故障</span>
                 </div>
@@ -452,9 +452,9 @@
                 const y = startY + r * gapY;
 
                 let color = '#a8d8a8'; 
-                if (seat.status === 'booked') color = '#1890ff';
+                if (seat.status === 'booked') color = '#66ccff';
                 else if (seat.status === 'occupied' || seat.status === 'used') color = '#ff6b6b';
-                else if (seat.status === 'temporary') color = '#faad14';
+                else if (seat.status === 'temporary') color = '#ffc107';
                 else if (seat.status === 'closed') color = '#cccccc'; 
 
                 const opacity = seat._dimmed ? '0.2' : '1';
@@ -490,7 +490,7 @@
                 const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
                 text.setAttribute('x', x + seatSize / 2); text.setAttribute('y', y + seatSize / 2 + 5);
                 text.setAttribute('font-size', '12'); text.setAttribute('font-weight', 'bold');
-                text.setAttribute('fill', (color === '#a8d8a8' || color === '#cccccc') ? '#555' : '#fff');
+                text.setAttribute('fill', (color === '#a8d8a8' || color === '#cccccc' || color === '#66ccff' || color === '#ffc107') ? '#555' : '#fff');
                 text.setAttribute('opacity', opacity);
                 text.setAttribute('text-anchor', 'middle'); text.setAttribute('pointer-events', 'none');
                 
@@ -541,24 +541,26 @@
             renderViolationTable(allReportsCache);
         }
 
-        function renderViolationTable(reports) {
-            const tbody = document.getElementById('reportTableBody');
-            tbody.innerHTML = '';
-            let pendingCount = 0;
+        	function updateViolationStats(reports) {
             const todayStr = new Date().toISOString().slice(0, 10);
             const monthStr = new Date().toISOString().slice(0, 7);
-            let todayCount = 0, monthCount = 0;
-
+            let pendingCount = 0, todayCount = 0, monthCount = 0;
             reports.forEach(report => {
                 const isPending = report.status === 'pending';
                 if (isPending) pendingCount++;
+                if (report.status === 'pending') pendingCount++;
                 if (report.reportTime && report.reportTime.startsWith(todayStr)) todayCount++;
                 if (report.reportTime && report.reportTime.startsWith(monthStr)) monthCount++;
             });
             document.getElementById('pendingCount').textContent = pendingCount;
             document.getElementById('todayCount').textContent = todayCount;
             document.getElementById('monthCount').textContent = monthCount;
+        	 }
 
+            function renderViolationTable(reports) {
+                const tbody = document.getElementById('reportTableBody');
+                tbody.innerHTML = '';
+                
             if (reports.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: #999; padding: 20px;">暂无数据</td></tr>';
                 return;
@@ -587,6 +589,8 @@
                 const matchStatus = !statusFilter || r.status === statusFilter;
                 return matchKeyword && matchType && matchStatus;
             });
+            // Stats always reflect ALL records, not just filtered
+            updateViolationStats(allReportsCache);
             renderViolationTable(filtered);
         }
 
