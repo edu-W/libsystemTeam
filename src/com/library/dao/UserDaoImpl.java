@@ -72,6 +72,33 @@ public class UserDaoImpl implements UsersDao {
         }
         return list;
     }
+    @Override
+    public List<Users> getAdmin() {
+    	List<Users> list = new ArrayList<>();
+    	 Connection conn = null;
+         PreparedStatement pstmt = null;
+         ResultSet rs = null;
+         try {
+             conn = DBUtil.getConnection();
+             String sql = "SELECT * FROM users WHERE role = 'admin' ORDER BY account ASC";
+             pstmt = conn.prepareStatement(sql);
+             rs = pstmt.executeQuery();
+             
+             while (rs.next()) {
+                 Users user = new Users();
+                 user.setAccount(rs.getString("account"));
+                 user.setName(rs.getString("name"));
+                 user.setRole(rs.getString("role"));
+                 user.setStatus(rs.getString("status")); 
+                 list.add(user);
+             }
+         } catch (Exception e) {
+             e.printStackTrace();
+         } finally {
+             DBUtil.close(conn, pstmt, rs);
+         }
+         return list;
+    }
 
     @Override
     public boolean unfreezeUser(String account) {
@@ -107,7 +134,7 @@ public class UserDaoImpl implements UsersDao {
 
         try {
             conn = DBUtil.getConnection();
-            String sql = "SELECT * FROM Users WHERE account = ?";
+            String sql = "SELECT * FROM users WHERE account = ?";
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, account);
             rs = pstmt.executeQuery();
@@ -118,8 +145,9 @@ public class UserDaoImpl implements UsersDao {
                 user.setName(rs.getString("name"));
                 user.setRole(rs.getString("role"));
                 user.setStatus(rs.getString("status"));
-                // ⚠️ 注意：这里读取了信用分和冻结时间，请确保你的 Users 实体类里有这两个属性的 Getter/Setter
                 user.setCredit(rs.getInt("credit"));
+                user.setPhone(rs.getString("phone"));
+                user.setEmail(rs.getString("email"));
                 user.setFreezeEndTime(rs.getTimestamp("freeze_end_time"));
             }
         } catch (Exception e) {
@@ -205,6 +233,34 @@ public class UserDaoImpl implements UsersDao {
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, newPassword);
             pstmt.setString(2, account);
+
+            if (pstmt.executeUpdate() > 0) {
+                isSuccess = true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DBUtil.close(conn, pstmt, null);
+        }
+        return isSuccess;
+    }
+ // 🌟 实现更新管理员基本信息的方法
+    @Override
+    public boolean updateAdminProfile(String account, String phone, String email) {
+        boolean isSuccess = false;
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        try {
+            conn = DBUtil.getConnection();
+            // 根据账号更新对应的手机号和邮箱
+            String sql = "UPDATE users SET phone = ?, email = ? WHERE account = ?";
+            pstmt = conn.prepareStatement(sql);
+            
+            // 🚨 检查这里！必须严格按照上面的问号顺序来！
+            pstmt.setString(1, phone);  // 第 1 个必须是电话
+            pstmt.setString(2, email);  // 第 2 个必须是邮箱
+            pstmt.setString(3, account); // 第 3 个必须是账号
 
             if (pstmt.executeUpdate() > 0) {
                 isSuccess = true;
