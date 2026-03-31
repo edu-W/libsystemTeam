@@ -150,7 +150,7 @@
         
         let realSeatData = {}; 
         try {
-            const response = await fetch("http://localhost:8080/libPrj/api/seats?floor=" + selection.floor + "&area=" + selection.area);
+            const response = await fetch("http://localhost:8080/library/api/seats?floor=" + selection.floor + "&area=" + selection.area);
             const result = await response.json();
             if (result.code === 200) {
                 result.data.forEach(seat => { realSeatData[seat.seatId] = seat; });

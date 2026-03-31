@@ -348,7 +348,7 @@
         <script>
             // 修复：移除APP_CONFIG里的多余空格
             const APP_CONFIG = {
-                API_BASE_URL: 'http://localhost:8080/api',
+                API_BASE_URL: 'http://localhost:8080/library/api',
                 STORAGE_KEY_TOKEN: 'lib_token',
                 STORAGE_KEY_ROLE: 'lib_role',
                 STORAGE_KEY_USER_ID: 'lib_user_id',
@@ -399,7 +399,7 @@
             // 优化：登录成功后存储完整用户信息
             async function loginToBackend(account, password) {
             	try {
-                    const response = await fetch('http://localhost:8080/libPrj/api/login', {
+                    const response = await fetch('http://localhost:8080/library/api/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ account, password, role: selectedRole })
