@@ -187,10 +187,6 @@
                 <i class="fas fa-power-off icon" style="color: #ff4d4f;"></i>
                 <div class="icon-text" style="color: #ff4d4f;">退出登录</div>
             </div>
-            <div class="icon-item" id="goMapBtn">
-                <i class="fas fa-map-marked-alt icon" style="color: #1890ff;"></i>
-                <div class="icon-text" style="color: #1890ff;">查看地图</div>
-            </div>
         </div>
     </div>
 
@@ -442,8 +438,6 @@
                     localStorage.clear();
                     window.location.href = 'login.html';
                 }
-            } else if (text === '查看地图') {
-                window.location.href = 'seat-map.html';
             } else {
                 openModal(text);
             }
@@ -508,7 +502,33 @@
                     <input type="password" id="confirmPassword" placeholder="请再次确认新密码" style="width: 100%; padding: 8px 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; outline: none;">
                     <button onclick="submitPasswordUpdate()" style="width: 100%; padding: 10px; background: #0b3b5c; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(11,59,92,0.2);">确认修改</button>
                 </div>`;
-        }else if (title === '帮助中心') {
+        }else if (title === '常用设置') {
+            body.innerHTML = `
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div onclick="window.location.href='seat-map.html'" style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: #f0f7ff; border-radius: 10px; cursor: pointer; border: 1px solid #d4e8ff; transition: background 0.2s;" onmouseover="this.style.background='#deeeff'" onmouseout="this.style.background='#f0f7ff'">
+                        <i class="fas fa-map-marked-alt" style="font-size: 1.4rem; color: #1890ff; width: 24px;"></i>
+                        <div>
+                            <div style="font-weight: 600; color: #0b3b5c; font-size: 0.95rem;">查看座位地图</div>
+                            <div style="font-size: 0.8rem; color: #888; margin-top: 2px;">浏览实时座位状态，快速选座</div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="margin-left: auto; color: #bbb;"></i>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: #f9f9f9; border-radius: 10px; cursor: default; border: 1px solid #eee; opacity: 0.7;">
+                        <i class="fas fa-bell" style="font-size: 1.4rem; color: #888; width: 24px;"></i>
+                        <div>
+                            <div style="font-weight: 600; color: #555; font-size: 0.95rem;">通知设置</div>
+                            <div style="font-size: 0.8rem; color: #aaa; margin-top: 2px;">功能开发中...</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: #f9f9f9; border-radius: 10px; cursor: default; border: 1px solid #eee; opacity: 0.7;">
+                        <i class="fas fa-moon" style="font-size: 1.4rem; color: #888; width: 24px;"></i>
+                        <div>
+                            <div style="font-weight: 600; color: #555; font-size: 0.95rem;">深色模式</div>
+                            <div style="font-size: 0.8rem; color: #aaa; margin-top: 2px;">功能开发中...</div>
+                        </div>
+                    </div>
+                </div>`;
+        } else if (title === '帮助中心') {
             body.innerHTML = `
                 <p style="margin-bottom: 10px;"><strong>Q：如何释放座位？</strong><br>A：在地图上点击自己的座位即可退座。</p>
                 <p style="margin-bottom: 10px;"><strong>Q：暂离怎么算？</strong><br>A：暂离限时30分钟，超时系统将自动判定为违约并释放座位。</p>`;
