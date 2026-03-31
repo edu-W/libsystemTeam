@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 80037
 File Encoding         : 65001
 
-Date: 2026-03-31 10:55:09
+Date: 2026-03-31 11:32:26
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -26,132 +26,134 @@ CREATE TABLE `lib_seat` (
   `status` varchar(16) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'available',
   `user_account` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `check_in_time` datetime DEFAULT NULL,
+  `book_time` datetime DEFAULT NULL COMMENT '预约时间',
+  `leave_time` datetime DEFAULT NULL COMMENT '暂离/离开时间',
   PRIMARY KEY (`seat_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ----------------------------
 -- Records of lib_seat
 -- ----------------------------
-INSERT INTO `lib_seat` VALUES ('1-A-001', '1', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-A-002', '1', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-A-003', '1', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-A-004', '1', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-A-005', '1', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-A-006', '1', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-A-007', '1', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-A-008', '1', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-A-009', '1', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-A-010', '1', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-B-001', '1', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-B-002', '1', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-B-003', '1', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-B-004', '1', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-B-005', '1', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-B-006', '1', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-B-007', '1', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-B-008', '1', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-B-009', '1', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-B-010', '1', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-C-001', '1', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-C-002', '1', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-C-003', '1', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-C-004', '1', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-C-005', '1', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-C-006', '1', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-C-007', '1', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-C-008', '1', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-C-009', '1', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('1-C-010', '1', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-A-001', '2', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-A-002', '2', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-A-003', '2', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-A-004', '2', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-A-005', '2', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-A-006', '2', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-A-007', '2', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-A-008', '2', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-A-009', '2', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-A-010', '2', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-B-001', '2', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-B-002', '2', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-B-003', '2', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-B-004', '2', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-B-005', '2', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-B-006', '2', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-B-007', '2', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-B-008', '2', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-B-009', '2', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-B-010', '2', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-C-001', '2', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-C-002', '2', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-C-003', '2', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-C-004', '2', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-C-005', '2', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-C-006', '2', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-C-007', '2', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-C-008', '2', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-C-009', '2', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('2-C-010', '2', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-A-001', '3', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-A-002', '3', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-A-003', '3', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-A-004', '3', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-A-005', '3', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-A-006', '3', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-A-007', '3', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-A-008', '3', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-A-009', '3', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-A-010', '3', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-B-001', '3', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-B-002', '3', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-B-003', '3', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-B-004', '3', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-B-005', '3', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-B-006', '3', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-B-007', '3', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-B-008', '3', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-B-009', '3', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-B-010', '3', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-C-001', '3', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-C-002', '3', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-C-003', '3', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-C-004', '3', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-C-005', '3', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-C-006', '3', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-C-007', '3', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-C-008', '3', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-C-009', '3', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('3-C-010', '3', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-A-001', '4', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-A-002', '4', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-A-003', '4', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-A-004', '4', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-A-005', '4', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-A-006', '4', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-A-007', '4', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-A-008', '4', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-A-009', '4', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-A-010', '4', 'A', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-B-001', '4', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-B-002', '4', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-B-003', '4', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-B-004', '4', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-B-005', '4', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-B-006', '4', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-B-007', '4', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-B-008', '4', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-B-009', '4', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-B-010', '4', 'B', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-C-001', '4', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-C-002', '4', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-C-003', '4', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-C-004', '4', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-C-005', '4', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-C-006', '4', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-C-007', '4', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-C-008', '4', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-C-009', '4', 'C', 'available', null, null);
-INSERT INTO `lib_seat` VALUES ('4-C-010', '4', 'C', 'available', null, null);
+INSERT INTO `lib_seat` VALUES ('1-A-001', '1', 'A', 'available', null, null, '2026-03-31 11:25:54', '2026-03-31 11:23:38');
+INSERT INTO `lib_seat` VALUES ('1-A-002', '1', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-A-003', '1', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-A-004', '1', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-A-005', '1', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-A-006', '1', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-A-007', '1', 'A', 'available', null, null, '2026-03-31 11:27:32', null);
+INSERT INTO `lib_seat` VALUES ('1-A-008', '1', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-A-009', '1', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-A-010', '1', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-B-001', '1', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-B-002', '1', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-B-003', '1', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-B-004', '1', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-B-005', '1', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-B-006', '1', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-B-007', '1', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-B-008', '1', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-B-009', '1', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-B-010', '1', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-C-001', '1', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-C-002', '1', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-C-003', '1', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-C-004', '1', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-C-005', '1', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-C-006', '1', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-C-007', '1', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-C-008', '1', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-C-009', '1', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('1-C-010', '1', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-A-001', '2', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-A-002', '2', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-A-003', '2', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-A-004', '2', 'A', 'available', null, null, '2026-03-31 11:22:11', '2026-03-31 11:23:56');
+INSERT INTO `lib_seat` VALUES ('2-A-005', '2', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-A-006', '2', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-A-007', '2', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-A-008', '2', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-A-009', '2', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-A-010', '2', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-B-001', '2', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-B-002', '2', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-B-003', '2', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-B-004', '2', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-B-005', '2', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-B-006', '2', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-B-007', '2', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-B-008', '2', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-B-009', '2', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-B-010', '2', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-C-001', '2', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-C-002', '2', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-C-003', '2', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-C-004', '2', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-C-005', '2', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-C-006', '2', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-C-007', '2', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-C-008', '2', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-C-009', '2', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('2-C-010', '2', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-A-001', '3', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-A-002', '3', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-A-003', '3', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-A-004', '3', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-A-005', '3', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-A-006', '3', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-A-007', '3', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-A-008', '3', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-A-009', '3', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-A-010', '3', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-B-001', '3', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-B-002', '3', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-B-003', '3', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-B-004', '3', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-B-005', '3', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-B-006', '3', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-B-007', '3', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-B-008', '3', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-B-009', '3', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-B-010', '3', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-C-001', '3', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-C-002', '3', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-C-003', '3', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-C-004', '3', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-C-005', '3', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-C-006', '3', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-C-007', '3', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-C-008', '3', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-C-009', '3', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('3-C-010', '3', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-A-001', '4', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-A-002', '4', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-A-003', '4', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-A-004', '4', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-A-005', '4', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-A-006', '4', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-A-007', '4', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-A-008', '4', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-A-009', '4', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-A-010', '4', 'A', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-B-001', '4', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-B-002', '4', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-B-003', '4', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-B-004', '4', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-B-005', '4', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-B-006', '4', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-B-007', '4', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-B-008', '4', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-B-009', '4', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-B-010', '4', 'B', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-C-001', '4', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-C-002', '4', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-C-003', '4', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-C-004', '4', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-C-005', '4', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-C-006', '4', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-C-007', '4', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-C-008', '4', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-C-009', '4', 'C', 'available', null, null, null, null);
+INSERT INTO `lib_seat` VALUES ('4-C-010', '4', 'C', 'available', null, null, null, null);
 
 -- ----------------------------
 -- Table structure for report
@@ -183,12 +185,20 @@ CREATE TABLE `seat_record` (
   `action_type` varchar(16) COLLATE utf8mb4_general_ci NOT NULL,
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ----------------------------
 -- Records of seat_record
 -- ----------------------------
 INSERT INTO `seat_record` VALUES ('1', '2024000001', '1-A-008', 'book', '2026-03-30 09:24:07');
+INSERT INTO `seat_record` VALUES ('2', '2024214316', '1-A-001', 'book', '2026-03-31 11:16:18');
+INSERT INTO `seat_record` VALUES ('3', '2024214316', '1-A-001', 'finish', '2026-03-31 11:18:02');
+INSERT INTO `seat_record` VALUES ('4', '2024214316', '2-A-004', 'book', '2026-03-31 11:22:11');
+INSERT INTO `seat_record` VALUES ('5', '2024214316', '2-A-004', 'finish', '2026-03-31 11:23:12');
+INSERT INTO `seat_record` VALUES ('6', '2024214316', '1-A-001', 'book', '2026-03-31 11:25:54');
+INSERT INTO `seat_record` VALUES ('7', '2024214316', '1-A-001', 'finish', '2026-03-31 11:25:58');
+INSERT INTO `seat_record` VALUES ('8', '2024214316', '1-A-007', 'book', '2026-03-31 11:27:32');
+INSERT INTO `seat_record` VALUES ('9', '2024214316', '1-A-007', 'finish', '2026-03-31 11:27:48');
 
 -- ----------------------------
 -- Table structure for users
@@ -207,12 +217,12 @@ CREATE TABLE `users` (
 -- ----------------------------
 -- Records of users
 -- ----------------------------
-INSERT INTO `users` VALUES ('', '123456', '张霄', 'student', 'normal', '100');
 INSERT INTO `users` VALUES ('2023214414', '123456', '彭子恒', 'student', 'normal', '100');
-INSERT INTO `users` VALUES ('2024000001', '123456', '测试学生', 'student', 'normal', '100');
+INSERT INTO `users` VALUES ('2024210001', '123456', '管理员', 'admin', 'normal', '100');
 INSERT INTO `users` VALUES ('2024211056', '123456', '漆诚鹏', 'student', 'normal', '100');
 INSERT INTO `users` VALUES ('2024211437', '123456', '燕佳鑫', 'student', 'normal', '100');
 INSERT INTO `users` VALUES ('2024212886', '123456', '李波溶', 'student', 'normal', '100');
+INSERT INTO `users` VALUES ('2024214001', '123456', '测试学生', 'student', 'normal', '100');
 INSERT INTO `users` VALUES ('2024214277', '123456', '栗子锰', 'student', 'normal', '100');
 INSERT INTO `users` VALUES ('2024214279', '123456', '杜佳昀', 'student', 'normal', '100');
 INSERT INTO `users` VALUES ('2024214280', '123456', '阳思宇', 'student', 'normal', '100');
@@ -267,6 +277,7 @@ INSERT INTO `users` VALUES ('2024214340', '123456', '贺云龙', 'student', 'nor
 INSERT INTO `users` VALUES ('2024214341', '123456', '徐文博', 'student', 'normal', '100');
 INSERT INTO `users` VALUES ('2024214342', '123456', '王莫会', 'student', 'normal', '100');
 INSERT INTO `users` VALUES ('2024214343', '123456', '戴棋润', 'student', 'normal', '100');
+INSERT INTO `users` VALUES ('2024214344', '123456', '张霄', 'student', 'normal', '100');
 INSERT INTO `users` VALUES ('2024214345', '123456', '李金鑫', 'student', 'normal', '100');
 INSERT INTO `users` VALUES ('2024214346', '123456', '付子昂', 'student', 'normal', '100');
 INSERT INTO `users` VALUES ('2024214347', '123456', '田靖奇', 'student', 'normal', '100');
@@ -274,4 +285,3 @@ INSERT INTO `users` VALUES ('2024214348', '123456', '徐印', 'student', 'normal
 INSERT INTO `users` VALUES ('2024214349', '123456', '吴承曦', 'student', 'normal', '100');
 INSERT INTO `users` VALUES ('2024214847', '123456', '黄佳超', 'student', 'normal', '100');
 INSERT INTO `users` VALUES ('2024215096', '123456', '刘玮', 'student', 'normal', '100');
-INSERT INTO `users` VALUES ('lwzy2026001', '123456', '管理员', 'admin', 'normal', '100');
