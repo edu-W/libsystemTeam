@@ -10,7 +10,7 @@ public class DBUtil {
     // 数据库连接配置 (请根据你自己的 MySQL 账号密码进行修改)
     private static final String URL = "jdbc:mysql://localhost:3306/library_seat_db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai";
     private static final String USERNAME = "root"; // 你的 MySQL 用户名
-    private static final String PASSWORD = "zxy200674@"; // 你的 MySQL 密码
+    private static final String PASSWORD = "MySql@edu_W9005^^"; // 你的 MySQL 密码
 
     // 静态代码块：确保驱动只加载一次
     static {

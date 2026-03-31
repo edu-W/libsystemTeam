@@ -374,11 +374,11 @@
 
             function validateForm(account, password) {
                 if (!account || !account.trim()) {
-                    showError('请输入统一认证码');
+                    showError('请输入学号');
                     return false;
                 }
-                if (account.length < 6) {
-                    showError('统一认证码长度不符（至少6位）');
+                if (account.length < 10) {
+                    showError('学号长度不符合');
                     return false;
                 }
                 if (!password || !password.trim()) {
@@ -398,32 +398,26 @@
 
             // 优化：登录成功后存储完整用户信息
             async function loginToBackend(account, password) {
-                const testUsers = [
-                    { account: "2024001", password: "111111", role: "student", name: "王小明" },
-                    { account: "2024002", password: "222222", role: "student", name: "周小雨" },
-                    { account: "2024003", password: "333333", role: "student", name: "刘小涵" },
-                    { account: "2024004", password: "444444", role: "student", name: "阳小宇" },
-                    { account: "000001", password: "123456", role: "admin", name: "斯律亥" }
-                ];
-               
-                const user = testUsers.find(u => u.account === account && u.password === password);
-                if (!user) {
-                    showError("账号或密码错误");
-                    return;
-                }
-                if (user.role !== selectedRole) {
-                    showError("用户不匹配！");
-                    return;
-                }
-            
-
-                // 保存完整用户信息到本地存储
-                localStorage.setItem(APP_CONFIG.STORAGE_KEY_TOKEN, "fake_token_" + Date.now());
-                localStorage.setItem(APP_CONFIG.STORAGE_KEY_USER_ID, "user_" + Date.now());
-                localStorage.setItem(APP_CONFIG.STORAGE_KEY_ROLE, user.role);
-                localStorage.setItem(APP_CONFIG.STORAGE_KEY_ACCOUNT, account);
-                localStorage.setItem(APP_CONFIG.STORAGE_KEY_NAME, user.name);
-                
+            	 try {
+            	        const response = await fetch('http://localhost:8080/libPrj/api/login', {
+            	            method: 'POST',
+            	            headers: { 'Content-Type': 'application/json' },
+            	            body: JSON.stringify({ account, password, role: selectedRole })
+            	        });
+            	        const result = await response.json();
+            	        if (result.code === 200) {
+            	            // 保存 token、角色等信息，并跳转
+            	            localStorage.setItem(APP_CONFIG.STORAGE_KEY_TOKEN, result.data.token);
+            	            localStorage.setItem(APP_CONFIG.STORAGE_KEY_ROLE, result.data.role);
+            	            localStorage.setItem(APP_CONFIG.STORAGE_KEY_ACCOUNT, account);
+            	            localStorage.setItem(APP_CONFIG.STORAGE_KEY_NAME, result.data.name);
+            	            redirectAfterLogin();
+            	        } else {
+            	            showError(result.message);
+            	        }
+            	    } catch (error) {
+            	        showError('网络错误，请检查后端服务是否启动');
+            	    }
                 // 记住密码功能
                 if (document.getElementById('rememberPwd').checked) {
                     localStorage.setItem('saved_pwd_' + account, password);

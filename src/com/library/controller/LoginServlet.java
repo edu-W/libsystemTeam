@@ -43,9 +43,29 @@ public class LoginServlet extends HttpServlet {
         Gson gson = new Gson();
         Users loginData = gson.fromJson(sb.toString(), Users.class); 
 
+        
+     // ！！！！！登陆密码错误测试1：👇👇👇 加在调用 DAO 之前
+        System.out.println("===== 前端传来的数据 =====");
+        System.out.println("account: " + loginData.getAccount());
+        System.out.println("password: " + loginData.getPassword());
+        System.out.println("role: " + loginData.getRole());
+        
         // 4. 派活：调用 DAO 去数据库里查这个账号密码对不对
         Users dbUser = userDao.getUserByAccountAndPassword(loginData.getAccount(), loginData.getPassword());
 
+        
+     // ！！！登录密码错误测试2：👇👇👇 加在调用 DAO 之后
+        System.out.println("===== 数据库查询结果 =====");
+        System.out.println("dbUser: " + dbUser);
+
+        if (dbUser != null) {
+            System.out.println("dbAccount: " + dbUser.getAccount());
+            System.out.println("dbPassword: " + dbUser.getPassword());
+            System.out.println("dbRole: " + dbUser.getRole());
+            System.out.println("dbStatus: " + dbUser.getStatus());
+        }
+        
+        
         // 5. 准备返回给前端的结果集
         Map<String, Object> resultMap = new HashMap<>();
         
