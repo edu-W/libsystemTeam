@@ -548,7 +548,6 @@
             reports.forEach(report => {
                 const isPending = report.status === 'pending';
                 if (isPending) pendingCount++;
-                if (report.status === 'pending') pendingCount++;
                 if (report.reportTime && report.reportTime.startsWith(todayStr)) todayCount++;
                 if (report.reportTime && report.reportTime.startsWith(monthStr)) monthCount++;
             });
