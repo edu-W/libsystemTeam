@@ -492,79 +492,79 @@
 
         
         // ==========================================
-   🌟 1.修复后的动态获取账号（必须与 login.html 暗号一致）
-           // ==========================================
-    function getLoggedAdminAccount（） {
-   核心修复:login.html 里存的是 'lib_account'，所以这里必须取 'lib_account'
-   return localStorage.getItem（'lib_account'）;
-           }
+        // 🌟 1. 修复后的动态获取账号（必须与 login.html 暗号一致）
+        // ==========================================
+        function getLoggedAdminAccount() {
+            // 核心修复: login.html 里存的是 'lib_account'，所以这里必须取 'lib_account'
+            return localStorage.getItem('lib_account');
+        }
 
-   // 获取真实的动态账号
-   const currentAdminAccount = getLoggedAdminAccount（）;
+        // 获取真实的动态账号
+        const currentAdminAccount = getLoggedAdminAccount();
 
-   // 页面初始化加载
-   window.addEventListener（'load'， function（） {
-   console.log（“当前识别到的管理员账号：”， currentAdminAccount）;// 调试用
-               
-   如果 （！currentAdminAccount） {
-   alert（'未检测到登录状态，请先登录！'）;
-   window.location.href = 'login.html';
-   返回;
-               }
-   // 开始拉取数据
-   fetchAdminData（）;
-           });
+        // 页面初始化加载
+        window.addEventListener('load', function() {
+            console.log("当前识别到的管理员账号：", currentAdminAccount); // 调试用
 
-           // ==========================================
-   🌟 2.真实请求：获取并渲染当前管理员数据
-           // ==========================================
-   async function fetchAdminData（） {
-   试试{
-   // 动态拼接真实账号向后台要数据
-   const response = await fetch（'http：//localhost：8080/libPrj/api/admin/getProfile？account=${currentAdminAccount}'）;
-   const 结果 = 等待 response.json（）;
-                   
-   if （result.code === 200） {
-   const admin = result.data;
-   // 成功拿到数据，替换掉“加载中...”
-   document.getElementById（'phone-input'）.value = admin.phone ||'';
-   document.getElementById（'email-input'）.value = admin.email ||'';
-                       
-   // 顺便把左上角的头像旁边的大字也变成真实姓名和工号
-   document.querySelector（'.profile-info h2'）.textContent = admin.name ||'管理员';
-   document.querySelector（'.profile-info p'）.textContent = '工号：${currentAdminAccount}';
-                       
-   // 把下面只读的真实姓名也填上
-   document.getElementById（'admin-name-input'）.value = admin.name ||'';
-   } 否则 {
-   // 如果后端查无此人
-   document.getElementById（'phone-input'）.placeholder = “未绑定”;
-   document.getElementById（'email-input'）.placeholder = “未绑定”;
-   console.error（“查无此账号信息：”， result.message）;
-                   }
-   } 捕获（错误）{
-   console.error（“网络或接口异常：请检查 GetAdminProfileServlet 是否存在并启动！”， error）;
-   document.getElementById（'phone-input'）.placeholder = “接口异常”;
-   document.getElementById（'email-input'）.placeholder = “接口异常”;
-               }
-           }
+            if (!currentAdminAccount) {
+                alert('未检测到登录状态，请先登录！');
+                window.location.href = 'login.html';
+                return;
+            }
+            // 开始拉取数据
+            fetchAdminData();
+        });
 
-           // ==========================================
-   🌟 3.真实请求：保存基本信息 (电话/邮箱)
-           // ==========================================
-    async 函数 saveBasicInfo（） {
-   if （！currentAdminAccount） 返回警报（'未获取到身份信息'）;
-               
-    const phone = document.getElementById（'phone-input'）.value.trim（）;
-    const email = document.getElementById（'email-input'）.value.trim（）;
-               
+        // ==========================================
+        // 🌟 2. 真实请求：获取并渲染当前管理员数据
+        // ==========================================
+        async function fetchAdminData() {
+            try {
+                // 动态拼接真实账号向后台要数据
+                const response = await fetch(`http://localhost:8080/library/api/admin/getProfile?account=${currentAdminAccount}`);
+                const result = await response.json();
+
+                if (result.code === 200) {
+                    const admin = result.data;
+                    // 成功拿到数据，替换掉"加载中..."
+                    document.getElementById('phone-input').value = admin.phone || '';
+                    document.getElementById('email-input').value = admin.email || '';
+
+                    // 顺便把左上角的头像旁边的大字也变成真实姓名和工号
+                    document.querySelector('.profile-info h2').textContent = admin.name || '管理员';
+                    document.querySelector('.profile-info p').textContent = `工号：${currentAdminAccount}`;
+
+                    // 把下面只读的真实姓名也填上
+                    document.getElementById('admin-name-input').value = admin.name || '';
+                } else {
+                    // 如果后端查无此人
+                    document.getElementById('phone-input').placeholder = "未绑定";
+                    document.getElementById('email-input').placeholder = "未绑定";
+                    console.error("查无此账号信息：", result.message);
+                }
+            } catch (error) {
+                console.error("网络或接口异常：请检查 GetAdminProfileServlet 是否存在并启动！", error);
+                document.getElementById('phone-input').placeholder = "接口异常";
+                document.getElementById('email-input').placeholder = "接口异常";
+            }
+        }
+
+        // ==========================================
+        // 🌟 3. 真实请求：保存基本信息 (电话/邮箱)
+        // ==========================================
+        async function saveBasicInfo() {
+            if (!currentAdminAccount) return alert('未获取到身份信息');
+
+            const phone = document.getElementById('phone-input').value.trim();
+            const email = document.getElementById('email-input').value.trim();
+            
             if (!phone || !email) {
                 alert('联系电话和电子邮箱不能为空！');
                 return;
             }
             
             try {
-                const response = await fetch('http://localhost:8080/libPrj/api/admin/updateProfile', {
+                const response = await fetch('http://localhost:8080/library/api/admin/updateProfile', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
@@ -611,7 +611,7 @@
             }
 
             try {
-                const response = await fetch('http://localhost:8080/libPrj/api/user/updatePassword', {
+                const response = await fetch('http://localhost:8080/library/api/user/updatePassword', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 

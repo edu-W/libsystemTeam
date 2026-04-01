@@ -345,6 +345,50 @@
             <span id="errorMsg"></span>
         </div>
 
+        <script>
+// 1. 全局配置：与其他页面保持一致的 localStorage 键名
+const APP_CONFIG = {
+    STORAGE_KEY_TOKEN:   'lib_token',
+    STORAGE_KEY_ROLE:    'lib_role',
+    STORAGE_KEY_NAME:    'lib_name',
+    STORAGE_KEY_ACCOUNT: 'lib_account'
+};
+
+let selectedRole = null;
+
+// 2. 表单验证
+function validateForm(account, password) {
+    if (!selectedRole) {
+        showError('请先选择身份（学生/管理员）');
+        return false;
+    }
+    if (!account) {
+        showError('请输入账号');
+        return false;
+    }
+    if (!password) {
+        showError('请输入密码');
+        return false;
+    }
+    return true;
+}
+
+// 3. 错误提示（自动消失）
+function showError(msg) {
+    const toast = document.getElementById('errorToast');
+    document.getElementById('errorMsg').textContent = msg;
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 3000);
+}
+
+// 4. 核心登录方法
+async function loginToBackend(account, password) {
+    try {
+        const response = await fetch('http://localhost:8080/library/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ account: account, password: password, role: selectedRole })
+        });
                const result = await response.json();
 
         if (result.code === 200) { 
