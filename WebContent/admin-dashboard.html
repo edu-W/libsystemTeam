@@ -538,6 +538,7 @@
             } catch (error) {
                 allReportsCache = [];
             }
+            updateViolationStats(allReportsCache);
             renderViolationTable(allReportsCache);
         }
 
